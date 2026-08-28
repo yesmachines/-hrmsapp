@@ -30,6 +30,10 @@ import '../../view/employee_screens/employee_personal_documents/controller/contr
 import '../../view/employee_screens/employee_personal_documents/view/employee_personal_documents_view.dart';
 import '../../view/employee_screens/employment_information/controller/controller.dart';
 import '../../view/employee_screens/employment_information/view/employment_information_view.dart';
+import '../../view/employee_screens/events/event_details_screen/controller/controller.dart';
+import '../../view/employee_screens/events/event_details_screen/view/event_details_view.dart';
+import '../../view/employee_screens/events/events_listing_screen/controller/controller.dart';
+import '../../view/employee_screens/events/events_listing_screen/view/events_view.dart';
 import '../../view/employee_screens/help_desk/help_desk_listing_screen/controller/controller.dart';
 import '../../view/employee_screens/help_desk/help_desk_listing_screen/view/help_desk_view.dart';
 import '../../view/employee_screens/help_desk/raise_ticket_screen/controller/controller.dart';
@@ -95,6 +99,8 @@ class AppRoutes {
   String helpDesk = "/helpDesk";
   String ticketDetails = "/ticketDetails";
   String raiseTicket = "/raiseTicket";
+  String events = "/events";
+  String eventDetails = "/eventDetails";
 }
 
 List<GetPage<dynamic>> routes = [
@@ -252,5 +258,15 @@ List<GetPage<dynamic>> routes = [
     name: appRoutes.raiseTicket,
     page: () => const RaiseTicketView(),
     binding: RaiseTicketController(),
+  ),
+  GetPage(
+    name: appRoutes.events,
+    page: () => const EventsView(),
+    binding: EventsController(),
+  ),
+  GetPage(
+    name: appRoutes.eventDetails,
+    page: () => const EventDetailsView(),
+    binding: EventDetailsController(),
   ),
 ];

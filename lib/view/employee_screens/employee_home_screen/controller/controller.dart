@@ -172,6 +172,10 @@ class HomeScreenController extends GetxController with Bindings {
       case 'Help':
         Get.toNamed(appRoutes.helpDesk);
         break;
+      case 'Events Today':
+      case 'Upcoming Events':
+        Get.toNamed(appRoutes.events);
+        break;
       default:
         break;
     }
