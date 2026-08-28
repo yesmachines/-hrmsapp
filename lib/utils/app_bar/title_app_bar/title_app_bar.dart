@@ -44,7 +44,13 @@ class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ),
-              Text(title ?? "", style: fontStyles.font20Black700Fixed),
+              Expanded(
+                child: Text(
+                  title ?? "",
+                  style: fontStyles.font20Black700Fixed,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               ?trailing,
             ],
           ),

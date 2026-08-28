@@ -5,4 +5,5 @@ class ApiRoutes {
 
   String login = "$_baseUrl/login";
   String ideas = "$_baseUrl/ideas";
+  String leaves = "$_baseUrl/leaves";
 }

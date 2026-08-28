@@ -13,7 +13,6 @@ class IdeasService {
         apiRoutes.ideas,
         queryParameters: {"page": page},
       );
-      print("the response is ${response.data}");
       if (response.statusCode != null &&
           response.statusCode! >= 200 &&
           response.statusCode! <= 300) {

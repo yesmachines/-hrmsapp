@@ -60,6 +60,7 @@ class IdeasView extends GetView<IdeasController> {
                       return RefreshIndicator(
                         onRefresh: controller.onRefresh,
                         child: ListView.builder(
+                          controller: controller.scrollController,
                           padding: EdgeInsets.symmetric(
                             horizontal: appSize.size16.w,
                             vertical: appSize.size12.w,

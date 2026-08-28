@@ -42,6 +42,7 @@ class AppColors {
   /// Profile menu accents
   Color profileIconBlueBg = Color(0xFFDBEAFE);
   Color profileIconBlue = Color(0xFF2563EB);
+  Color lightBlue = Color(0xFFEFF6FF);
   Color profileIconPurpleBg = Color(0xFFEDE9FE);
   Color profileIconPurple = Color(0xFF7C3AED);
   Color profileIconGreenBg = Color(0xFFDCFCE7);

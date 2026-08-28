@@ -154,6 +154,24 @@ class HomeScreenController extends GetxController with Bindings {
       case 'Ideas':
         Get.toNamed(appRoutes.ideas);
         break;
+      case 'Leave':
+        Get.toNamed(appRoutes.leave);
+        break;
+      case 'Directory':
+        Get.toNamed(appRoutes.employeeDirectory);
+        break;
+      case 'Visits':
+        Get.toNamed(appRoutes.visits);
+        break;
+      case 'Assets':
+        Get.toNamed(appRoutes.assets);
+        break;
+      case 'News':
+        Get.toNamed(appRoutes.news);
+        break;
+      case 'Help':
+        Get.toNamed(appRoutes.helpDesk);
+        break;
       default:
         break;
     }

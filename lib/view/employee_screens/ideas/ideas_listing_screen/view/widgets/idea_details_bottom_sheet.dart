@@ -105,19 +105,60 @@ Future<dynamic> showIdeaDetailsBottomSheet({required IdeaItem idea}) {
                       ),
                     ),
                     SizedBox(height: appSize.size16.h),
-                    Text(
+                    if(idea.ideaFiles.isNotEmpty)Text(
                       'ATTACHED REFERENCE PHOTOS',
                       style: fontStyles.font10LightGrey500,
                     ),
-                    SizedBox(height: appSize.size10.h),
-                    Row(
-                      children: [
-                        Expanded(child: _ReferencePhotoPlaceholder()),
-                        SizedBox(width: appSize.size10.w),
-                        Expanded(child: _ReferencePhotoPlaceholder()),
-                      ],
+                    if(idea.ideaFiles.isNotEmpty)SizedBox(height: appSize.size10.h),
+                    if(idea.ideaFiles.isNotEmpty)GridView.builder(
+                      itemCount: idea.ideaFiles.length,
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 1.4,
+                      ),
+                      itemBuilder: (context, index) {
+                        return Container(
+                          height: double.infinity,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(appSize.radius12),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: appColors.blackColor.withValues(
+                                  alpha: 0.04,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 12),
+                              ),
+                              BoxShadow(
+                                color: appColors.blackColor.withValues(
+                                  alpha: 0.04,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, -6),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: appColors.brandColor.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
+                          ),
+                          child: ImageHandler(
+                            height: appSize.size90.h,
+                            width: double.infinity,
+                            radius: appSize.radius12,
+                            imageType: .network,
+                            imageUrl: idea.ideaFiles[index],
+                          ),
+                        );
+                      },
                     ),
-                    SizedBox(height: appSize.size16.h),
+                    if(idea.ideaFiles.isNotEmpty)SizedBox(height: appSize.size16.h),
                     Divider(
                       height: 1,
                       color: appColors.strokeColor.withValues(alpha: 0.7),
@@ -208,24 +249,4 @@ Future<dynamic> showIdeaDetailsBottomSheet({required IdeaItem idea}) {
     backgroundColor: Colors.transparent,
     barrierColor: appColors.blackColor.withValues(alpha: 0.45),
   );
-}
-
-class _ReferencePhotoPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: appSize.size90.h,
-      decoration: BoxDecoration(
-        color: appColors.profileIconBlueBg,
-        borderRadius: BorderRadius.circular(appSize.radius12),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.lightbulb_outline,
-          color: appColors.brandColor,
-          size: appSize.icon32,
-        ),
-      ),
-    );
-  }
 }

@@ -25,7 +25,12 @@ class IdeaCard extends GetView<IdeasController> {
           BoxShadow(
             color: appColors.blackColor.withValues(alpha: 0.04),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: appColors.blackColor.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -67,6 +72,8 @@ class IdeaCard extends GetView<IdeasController> {
           SizedBox(height: appSize.size8.h),
           Text(
             idea.description,
+            maxLines: 2,
+            overflow: .ellipsis,
             style: fontStyles.font12LightGrey500.copyWith(
               letterSpacing: 0,
               fontWeight: FontWeight.w400,
