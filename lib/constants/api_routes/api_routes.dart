@@ -9,4 +9,5 @@ class ApiRoutes {
   String leaves = "$_baseUrl/leaves";
   String employees = "$_baseUrl/employees";
   String visits = "$_baseUrl/visits";
+  String profile = "$_baseUrl/me";
 }

@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PersonalInfoField {
-  const PersonalInfoField({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.isChip = false,
-  });
+import '../service/modal/personal_info_field.dart';
 
-  final String label;
-  final String value;
-  final IconData icon;
-  final bool isChip;
-}
 
 class PersonalInformationController extends GetxController with Bindings {
   final RxBool isEditing = false.obs;
