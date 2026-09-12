@@ -1,7 +1,7 @@
 class ImageData {
   static const String _basePath = "assets/images";
 
-  String noDataImage = "$_basePath/no_data_found.svg";
+  String noDataImage = "$_basePath/no_data_found.png";
   String loginIllustration = "$_basePath/login_illustration.png";
 }
 

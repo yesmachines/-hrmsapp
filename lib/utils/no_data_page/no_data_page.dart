@@ -24,7 +24,7 @@ class NoDataPage extends StatelessWidget {
               ImageHandler(
                 width: screenUtil.screenWidth / 3,
                 boxFit: BoxFit.fitWidth,
-                imageType: ImageType.svg,
+                imageType: ImageType.asset,
                 imageUrl: imageData.noDataImage,
               ),
               SizedBox(height: appSize.size16.h),

@@ -39,27 +39,35 @@ class EmployeeDirectoryCard extends GetView<EmployeeDirectoryController> {
               children: [
                 Text(employee.name, style: fontStyles.font14Black600),
                 SizedBox(height: appSize.size4.h),
-                Text(
-                  employee.designation,
-                  style: fontStyles.font12Brand600.copyWith(
-                    letterSpacing: 0,
+                if (employee.designation.isNotEmpty) ...[
+                  Text(
+                    employee.designation,
+                    style: fontStyles.font12Brand600.copyWith(
+                      letterSpacing: 0,
+                    ),
                   ),
-                ),
-                SizedBox(height: appSize.size10.h),
-                _InfoRow(
-                  icon: Icons.apartment_outlined,
-                  text: employee.department,
-                ),
-                SizedBox(height: appSize.size6.h),
-                _InfoRow(
-                  icon: Icons.mail_outline_rounded,
-                  text: employee.email,
-                ),
-                SizedBox(height: appSize.size6.h),
-                _InfoRow(
-                  icon: Icons.phone_outlined,
-                  text: employee.phone,
-                ),
+                  SizedBox(height: appSize.size10.h),
+                ] else
+                  SizedBox(height: appSize.size10.h),
+                if (employee.department.isNotEmpty) ...[
+                  _InfoRow(
+                    icon: Icons.apartment_outlined,
+                    text: employee.department,
+                  ),
+                  SizedBox(height: appSize.size6.h),
+                ],
+                if (employee.email.isNotEmpty) ...[
+                  _InfoRow(
+                    icon: Icons.mail_outline_rounded,
+                    text: employee.email,
+                  ),
+                  SizedBox(height: appSize.size6.h),
+                ],
+                if (employee.phone.isNotEmpty)
+                  _InfoRow(
+                    icon: Icons.phone_outlined,
+                    text: employee.phone,
+                  ),
               ],
             ),
           ),

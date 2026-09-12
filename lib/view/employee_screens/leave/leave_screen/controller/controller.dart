@@ -39,48 +39,6 @@ class LeaveController extends GetxController with Bindings {
     ),
   ];
 
-  late final List<LeaveEventModel> events = [
-    LeaveEventModel(
-      id: '1',
-      title: 'Annual Leave',
-      startDate: DateTime(2026, 7, 24),
-      endDate: DateTime(2026, 7, 28),
-      accentColor: appColors.brandColor,
-      badge: LeaveEventBadge.approved,
-    ),
-    LeaveEventModel(
-      id: '2',
-      title: 'Sick Leave',
-      startDate: DateTime(2026, 7, 14),
-      endDate: DateTime(2026, 7, 15),
-      accentColor: appColors.tilePurple,
-      badge: LeaveEventBadge.approved,
-    ),
-    LeaveEventModel(
-      id: '3',
-      title: 'Work From Home',
-      startDate: DateTime(2026, 7, 8),
-      endDate: DateTime(2026, 7, 8),
-      accentColor: appColors.tileTeal,
-      badge: LeaveEventBadge.approved,
-    ),
-    LeaveEventModel(
-      id: '4',
-      title: 'Germany Travel',
-      startDate: DateTime(2026, 7, 18),
-      endDate: DateTime(2026, 7, 18),
-      accentColor: appColors.orangeColor,
-      badge: LeaveEventBadge.businessTrip,
-    ),
-  ];
-
-  List<LeaveEventModel> get filteredEvents {
-    final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) return events;
-    return events
-        .where((event) => event.title.toLowerCase().contains(query))
-        .toList();
-  }
 
   String get monthLabel => DateFormat('MMMM yyyy').format(focusedMonth.value);
 
@@ -129,40 +87,40 @@ class LeaveController extends GetxController with Bindings {
         selected.day == day.day;
   }
 
-  bool isInLeaveRange(DateTime day) {
-    return events.any(
-      (event) =>
-          event.badge == LeaveEventBadge.approved &&
-          event.isRange &&
-          event.occursOn(day),
-    );
-  }
+  // bool isInLeaveRange(DateTime day) {
+  //   return events.any(
+  //     (event) =>
+  //         event.badge == LeaveEventBadge.approved &&
+  //         event.isRange &&
+  //         event.occursOn(day),
+  //   );
+  // }
 
-  bool isRangeStart(DateTime day) {
-    return events.any(
-      (event) =>
-          event.isRange &&
-          event.startDate.year == day.year &&
-          event.startDate.month == day.month &&
-          event.startDate.day == day.day,
-    );
-  }
+  // bool isRangeStart(DateTime day) {
+  //   return events.any(
+  //     (event) =>
+  //         event.isRange &&
+  //         event.startDate.year == day.year &&
+  //         event.startDate.month == day.month &&
+  //         event.startDate.day == day.day,
+  //   );
+  // }
 
-  bool isRangeEnd(DateTime day) {
-    return events.any(
-      (event) =>
-          event.isRange &&
-          event.endDate.year == day.year &&
-          event.endDate.month == day.month &&
-          event.endDate.day == day.day,
-    );
-  }
+  // bool isRangeEnd(DateTime day) {
+  //   return events.any(
+  //     (event) =>
+  //         event.isRange &&
+  //         event.endDate.year == day.year &&
+  //         event.endDate.month == day.month &&
+  //         event.endDate.day == day.day,
+  //   );
+  // }
 
-  bool hasEventDot(DateTime day) {
-    return events.any(
-      (event) => event.occursOn(day) && !isInLeaveRange(day),
-    );
-  }
+  // bool hasEventDot(DateTime day) {
+  //   return events.any(
+  //     (event) => event.occursOn(day) && !isInLeaveRange(day),
+  //   );
+  // }
 
   String eventDateLabel(LeaveEventModel event) {
     final format = DateFormat('d MMM');

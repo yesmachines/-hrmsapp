@@ -87,7 +87,7 @@ class ImageHandler extends StatelessWidget {
                       ),
                     ),
                     child: ImageHandler(
-                      imageType: ImageType.svg,
+                      imageType: ImageType.asset,
                       radius: radius,
                       imageUrl: imageData.noDataImage,
                       height: double.infinity,
@@ -126,7 +126,7 @@ class ImageHandler extends StatelessWidget {
                     ),
                     padding: EdgeInsets.all(appSize.size24.sp),
                     child: ImageHandler(
-                      imageType: ImageType.svg,
+                      imageType: ImageType.asset,
                       imageUrl: imageData.noDataImage,
                     ),
                   );
@@ -177,7 +177,7 @@ class ImageHandler extends StatelessWidget {
                     ),
                     padding: EdgeInsets.all(appSize.size24.sp),
                     child: ImageHandler(
-                      imageType: ImageType.svg,
+                      imageType: ImageType.asset,
                       imageUrl: imageData.noDataImage,
                     ),
                   );
@@ -211,7 +211,7 @@ class ImageHandler extends StatelessWidget {
                   ),
                   padding: EdgeInsets.all(appSize.size24.sp),
                   child: ImageHandler(
-                    imageType: ImageType.svg,
+                    imageType: ImageType.asset,
                     imageUrl: imageData.noDataImage,
                   ),
                 );

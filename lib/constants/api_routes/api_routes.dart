@@ -4,6 +4,9 @@ class ApiRoutes {
   static const String _baseUrl = "$baseUrl/api/v1";
 
   String login = "$_baseUrl/login";
+  String logout = "$_baseUrl/logout";
   String ideas = "$_baseUrl/ideas";
   String leaves = "$_baseUrl/leaves";
+  String employees = "$_baseUrl/employees";
+  String visits = "$_baseUrl/visits";
 }

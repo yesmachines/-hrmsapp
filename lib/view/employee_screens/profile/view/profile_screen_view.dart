@@ -64,7 +64,7 @@ class ProfileScreenView extends GetView<ProfileController> {
                 child: Icon(Icons.logout),
               ),
               buttonWidth: double.infinity,
-              onPressed: () {},
+              onPressed: controller.onLogout,
             ),
             SizedBox(height: appSize.size36.h),
           ],

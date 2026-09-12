@@ -14,26 +14,27 @@ class LeaveTypeExtraFields extends GetView<ApplyLeaveController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      switch (controller.selectedKind) {
-        case LeaveApplyKind.annual:
-          return _AnnualFields(controller: controller);
-        case LeaveApplyKind.sick:
-          return _SickFields(controller: controller);
-        case LeaveApplyKind.compassionate:
-          return _CompassionateFields(controller: controller);
-        case LeaveApplyKind.festival:
-          return _FestivalFields(controller: controller);
-        case LeaveApplyKind.maternity:
-          return _MaternityFields(controller: controller);
-        case LeaveApplyKind.parental:
-          return _ParentalFields(controller: controller);
-        case LeaveApplyKind.pilgrimage:
-          return _PilgrimageFields(controller: controller);
-        case LeaveApplyKind.compensatory:
-        case LeaveApplyKind.unpaid:
-        case LeaveApplyKind.other:
-          return const SizedBox.shrink();
-      }
+      final kind = controller.selectedKind;
+      return Column(
+        children: [
+          if (controller.needsHandover)
+            _AnnualFields(controller: controller),
+          switch (kind) {
+            LeaveApplyKind.annual => const SizedBox.shrink(),
+            LeaveApplyKind.sick => _SickFields(controller: controller),
+            LeaveApplyKind.compassionate =>
+              _CompassionateFields(controller: controller),
+            LeaveApplyKind.festival => _FestivalFields(controller: controller),
+            LeaveApplyKind.maternity => _MaternityFields(controller: controller),
+            LeaveApplyKind.parental => _ParentalFields(controller: controller),
+            LeaveApplyKind.pilgrimage =>
+              _PilgrimageFields(controller: controller),
+            LeaveApplyKind.compensatory ||
+            LeaveApplyKind.unpaid ||
+            LeaveApplyKind.other => const SizedBox.shrink(),
+          },
+        ],
+      );
     });
   }
 }
@@ -48,10 +49,13 @@ class _AnnualFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomTextField(
-          title: 'Handover Person *',
-          controller: controller.handoverPersonController,
-          hintText: 'Enter handover person name',
+        Obx(
+          () => _SelectField(
+            title: 'Handover Person *',
+            value: controller.selectedHandoverPerson.value?.name,
+            placeholder: 'Select handover person',
+            onTap: controller.onHandoverPersonTap,
+          ),
         ),
         SizedBox(height: appSize.size12.h),
         CustomTextField(
@@ -266,6 +270,15 @@ class _FestivalFields extends StatelessWidget {
     return Column(
       children: [
         Obx(
+          () => _SelectField(
+            title: 'Festival *',
+            value: controller.selectedFestival.value?.name,
+            placeholder: 'Select festival',
+            onTap: controller.onFestivalTap,
+          ),
+        ),
+        SizedBox(height: appSize.size12.h),
+        Obx(
           () => ApplyLeaveInfoCard(
             title: 'Festival Leave Rules',
             icon: Icons.info_outline_rounded,
@@ -367,11 +380,16 @@ class _ParentalFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomTextField(
-          title: "Child's Age (months) *",
-          controller: controller.childAgeController,
-          hintText: 'Enter age in months (must be < 6)',
-          keyboardType: TextInputType.number,
+        Obx(
+          () => _SelectField(
+            title: "Child's Birth Date *",
+            value: controller.childBirthDate.value == null
+                ? null
+                : controller.formatDate(controller.childBirthDate.value),
+            placeholder: 'Select child birth date',
+            onTap: controller.pickChildBirthDate,
+            trailing: Icons.calendar_today_outlined,
+          ),
         ),
         SizedBox(height: appSize.size12.h),
       ],
@@ -405,6 +423,69 @@ class _PilgrimageFields extends StatelessWidget {
           ),
         ),
         SizedBox(height: appSize.size12.h),
+      ],
+    );
+  }
+}
+
+class _SelectField extends StatelessWidget {
+  const _SelectField({
+    required this.title,
+    required this.placeholder,
+    required this.onTap,
+    this.value,
+    this.trailing = Icons.keyboard_arrow_down_rounded,
+  });
+
+  final String title;
+  final String? value;
+  final String placeholder;
+  final VoidCallback onTap;
+  final IconData trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: fontStyles.font14Black600),
+        SizedBox(height: appSize.size8.h),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(appSize.radius12),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: appSize.size14.w,
+              vertical: appSize.size14.h,
+            ),
+            decoration: BoxDecoration(
+              color: appColors.whiteColor,
+              borderRadius: BorderRadius.circular(appSize.radius12),
+              border: Border.all(color: appColors.strokeColor),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value ?? placeholder,
+                    style: fontStyles.font14Black600.copyWith(
+                      color: value == null ? appColors.lightGreyColor : null,
+                      fontWeight: value == null ? FontWeight.w400 : null,
+                    ),
+                  ),
+                ),
+                Icon(
+                  trailing,
+                  color: appColors.lightGreyColor,
+                  size: trailing == Icons.calendar_today_outlined
+                      ? 16.sp
+                      : 22.sp,
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

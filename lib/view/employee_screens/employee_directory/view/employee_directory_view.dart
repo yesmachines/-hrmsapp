@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
 import 'package:yes_hrm/view/employee_screens/employee_directory/controller/controller.dart';
@@ -61,9 +62,17 @@ class EmployeeDirectoryView extends GetView<EmployeeDirectoryController> {
                           vertical: appSize.size14.h,
                         ),
                         decoration: BoxDecoration(
-                          color: appColors.whiteColor,
+                          color: controller.selectedDepartment.value ==
+                                  'Department'
+                              ? appColors.whiteColor
+                              : appColors.submittedBadgeBg,
                           borderRadius: BorderRadius.circular(appSize.radius12),
-                          border: Border.all(color: appColors.strokeColor),
+                          border: Border.all(
+                            color: controller.selectedDepartment.value ==
+                                    'Department'
+                                ? appColors.strokeColor
+                                : appColors.brandColor.withValues(alpha: 0.35),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -75,7 +84,10 @@ class EmployeeDirectoryView extends GetView<EmployeeDirectoryController> {
                                   : controller.selectedDepartment.value
                                       .replaceAll(' Department', ''),
                               style: fontStyles.font12LightGrey500.copyWith(
-                                color: appColors.blackColor,
+                                color: controller.selectedDepartment.value ==
+                                        'Department'
+                                    ? appColors.blackColor
+                                    : appColors.brandColor,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0,
                               ),
@@ -96,20 +108,46 @@ class EmployeeDirectoryView extends GetView<EmployeeDirectoryController> {
             ),
             Expanded(
               child: Obx(() {
-                final employees = controller.filteredEmployees;
-                if (employees.isEmpty) {
-                  return const NoDataPage();
-                }
-                return ListView.builder(
-                  padding: EdgeInsets.fromLTRB(
-                    appSize.size16.w,
-                    0,
-                    appSize.size16.w,
-                    appSize.size24.h,
-                  ),
-                  itemCount: employees.length,
-                  itemBuilder: (context, index) {
-                    return EmployeeDirectoryCard(employee: employees[index]);
+                return FutureBuilder(
+                  key: ValueKey(controller.filterVersion.value),
+                  future: controller.employees.value == null
+                      ? controller.getEmployees()
+                      : null,
+                  builder: (context, snapshot) {
+                    if (controller.employees.value == null) {
+                      return const LoadingScreen();
+                    } else if (controller.employees.value!.isNotEmpty) {
+                      return RefreshIndicator(
+                        onRefresh: controller.onRefresh,
+                        child: ListView.builder(
+                          controller: controller.scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.fromLTRB(
+                            appSize.size16.w,
+                            0,
+                            appSize.size16.w,
+                            appSize.size24.h,
+                          ),
+                          itemCount: controller.employees.value!.length,
+                          itemBuilder: (context, index) {
+                            return EmployeeDirectoryCard(
+                              employee: controller.employees.value![index],
+                            );
+                          },
+                        ),
+                      );
+                    } else {
+                      return RefreshIndicator(
+                        onRefresh: controller.onRefresh,
+                        child: const SingleChildScrollView(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: 400,
+                            child: NoDataPage(),
+                          ),
+                        ),
+                      );
+                    }
                   },
                 );
               }),

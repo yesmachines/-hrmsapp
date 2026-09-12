@@ -4,8 +4,8 @@ Manage YES Employees.
 
 ## Getting Started
 
-"email": "basanth@yesmachinery1.ae",
-"password": "123456789",
+"email": "jishnujayakumar@yesmachinery.ae",
+"password": "12345678",
 
 This project is a starting point for a Flutter application.
 

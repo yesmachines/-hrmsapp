@@ -11,4 +11,17 @@ extension LeaveStatusEnum on LeaveStatus {
         return "Rejected";
     }
   }
+
+  static LeaveStatus fromString(dynamic value) {
+    switch (value?.toString().trim().toLowerCase()) {
+      case 'approved':
+        return LeaveStatus.approved;
+      case 'rejected':
+        return LeaveStatus.rejected;
+      case 'pending':
+      case 'requested':
+      default:
+        return LeaveStatus.requested;
+    }
+  }
 }

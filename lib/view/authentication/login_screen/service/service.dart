@@ -1,6 +1,3 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 
 import '../../../../main.dart';
@@ -30,6 +27,26 @@ class LoginService {
         throw DioException(
           requestOptions: RequestOptions(
             data: {"message": "Failed to sign in please try again"},
+          ),
+        );
+      }
+    } catch (e) {
+      appVariables.errorPrinting(e);
+      rethrow;
+    }
+  }
+
+  static Future<bool> logout() async {
+    try {
+      Response response = await dioApiCall().post(apiRoutes.logout);
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! <= 300) {
+        return true;
+      } else {
+        throw DioException(
+          requestOptions: RequestOptions(
+            data: {"message": "Failed to logout, please try again"},
           ),
         );
       }

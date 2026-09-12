@@ -7,6 +7,10 @@ import '../../loading_screen/loading_screen.dart';
 
 final dio = Dio();
 
+void resetDioClient() {
+  dio.interceptors.clear();
+}
+
 Dio dioApiCall() {
   String userToken = '';
   dio.options.connectTimeout = Duration(seconds: 60);

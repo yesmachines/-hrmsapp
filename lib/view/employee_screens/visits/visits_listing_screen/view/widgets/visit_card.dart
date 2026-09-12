@@ -14,85 +14,75 @@ class VisitCard extends GetView<VisitsController> {
   Widget build(BuildContext context) {
     final showDate = visit.tab != VisitTab.today;
 
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: appSize.size12.h),
-      padding: EdgeInsets.all(appSize.size16.w),
-      decoration: BoxDecoration(
-        color: appColors.whiteColor,
-        borderRadius: BorderRadius.circular(appSize.radius16),
-        boxShadow: [
-          BoxShadow(
-            color: appColors.blackColor.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _Chip(
-                label: visit.type.label,
-                bg: visit.tab == VisitTab.history &&
-                        visit.status != VisitStatus.approved
-                    ? appColors.scaffoldGreyColor
-                    : appColors.submittedBadgeBg,
-                text: visit.tab == VisitTab.history &&
-                        visit.status != VisitStatus.approved
-                    ? appColors.mediumGreyColor
-                    : appColors.submittedBadgeText,
-              ),
-              const Spacer(),
-              _Chip(
-                label: visit.status.label,
-                bg: controller.statusBg(visit.status),
-                text: controller.statusText(visit.status),
-              ),
-            ],
-          ),
-          SizedBox(height: appSize.size12.h),
-          Text(visit.title, style: fontStyles.font16Black700),
-          SizedBox(height: appSize.size10.h),
-          if (showDate) ...[
-            _MetaRow(
-              icon: Icons.calendar_month_outlined,
-              text: controller.formatDate(visit.date),
+    return InkWell(
+      onTap: () => controller.onViewVisit(visit),
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: appSize.size12.h),
+        padding: EdgeInsets.all(appSize.size16.w),
+        decoration: BoxDecoration(
+          color: appColors.whiteColor,
+          borderRadius: BorderRadius.circular(appSize.radius16),
+          boxShadow: [
+            BoxShadow(
+              color: appColors.blackColor.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
             ),
-            SizedBox(height: appSize.size6.h),
           ],
-          _MetaRow(icon: Icons.access_time_rounded, text: visit.time),
-          SizedBox(height: appSize.size6.h),
-          _MetaRow(icon: Icons.location_on_outlined, text: visit.location),
-          SizedBox(height: appSize.size12.h),
-          Divider(height: 1, color: appColors.strokeColor),
-          SizedBox(height: appSize.size12.h),
-          _LabeledValue(label: 'PURPOSE', value: visit.purpose),
-          SizedBox(height: appSize.size10.h),
-          _LabeledValue(label: 'ASSIGNED TASK', value: visit.assignedTask),
-          SizedBox(height: appSize.size12.h),
-          Align(
-            alignment: Alignment.centerRight,
-            child: InkWell(
-              onTap: () => controller.onViewVisit(visit),
-              borderRadius: BorderRadius.circular(appSize.radius8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('View', style: fontStyles.font14Brand700),
-                  SizedBox(width: appSize.size4.w),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 16.sp,
-                    color: appColors.brandColor,
-                  ),
-                ],
-              ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _Chip(
+                  label: visit.status.label,
+                  bg: controller.statusBg(visit.status),
+                  text: controller.statusText(visit.status),
+                ),
+              ],
             ),
-          ),
-        ],
+            SizedBox(height: appSize.size12.h),
+            Text(visit.title, style: fontStyles.font16Black700),
+            SizedBox(height: appSize.size10.h),
+            if (showDate) ...[
+              _MetaRow(
+                icon: Icons.calendar_month_outlined,
+                text: controller.formatDate(visit.date),
+              ),
+              SizedBox(height: appSize.size6.h),
+            ],
+            _MetaRow(icon: Icons.access_time_rounded, text: visit.time),
+            SizedBox(height: appSize.size6.h),
+            _MetaRow(icon: Icons.location_on_outlined, text: visit.location),
+            SizedBox(height: appSize.size12.h),
+            Divider(height: 1, color: appColors.strokeColor),
+            SizedBox(height: appSize.size12.h),
+            _LabeledValue(label: 'PURPOSE', value: visit.purpose),
+            SizedBox(height: appSize.size10.h),
+            // SizedBox(height: appSize.size12.h),
+            // Align(
+            //   alignment: Alignment.centerRight,
+            //   child: InkWell(
+            //     onTap: () => controller.onViewVisit(visit),
+            //     borderRadius: BorderRadius.circular(appSize.radius8),
+            //     child: Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text('View', style: fontStyles.font14Brand700),
+            //         SizedBox(width: appSize.size4.w),
+            //         Icon(
+            //           Icons.arrow_forward_rounded,
+            //           size: 16.sp,
+            //           color: appColors.brandColor,
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+          ],
+        ),
       ),
     );
   }

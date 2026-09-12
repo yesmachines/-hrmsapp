@@ -4,9 +4,12 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
 import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
+import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/view/widgets/leave_history_card.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/view/widgets/leave_history_filter_field.dart';
+import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/view/widgets/leave_record_body.dart';
 
 class LeaveHistoryView extends GetView<LeaveHistoryController> {
   const LeaveHistoryView({super.key});
@@ -23,11 +26,6 @@ class LeaveHistoryView extends GetView<LeaveHistoryController> {
             _AppBarIcon(
               icon: Icons.tune_rounded,
               onTap: controller.toggleFilters,
-            ),
-            SizedBox(width: appSize.size4.w),
-            _AppBarIcon(
-              icon: Icons.calendar_month_outlined,
-              onTap: controller.pickDateRange,
             ),
           ],
         ),
@@ -70,7 +68,7 @@ class LeaveHistoryView extends GetView<LeaveHistoryController> {
                               () => LeaveHistoryFilterField(
                                 label: 'LEAVE TYPE',
                                 value: controller.selectedLeaveType.value,
-                                onTap: () => _openOptionsSheet(
+                                onTap: () => controller.openOptionsSheet(
                                   title: 'Leave Type',
                                   options: controller.leaveTypeOptions,
                                   selected: controller.selectedLeaveType.value,
@@ -85,7 +83,7 @@ class LeaveHistoryView extends GetView<LeaveHistoryController> {
                               () => LeaveHistoryFilterField(
                                 label: 'YEAR',
                                 value: controller.selectedYear.value,
-                                onTap: () => _openOptionsSheet(
+                                onTap: () => controller.openOptionsSheet(
                                   title: 'Year',
                                   options: controller.yearOptions,
                                   selected: controller.selectedYear.value,
@@ -104,7 +102,7 @@ class LeaveHistoryView extends GetView<LeaveHistoryController> {
                               () => LeaveHistoryFilterField(
                                 label: 'MONTH',
                                 value: controller.selectedMonth.value,
-                                onTap: () => _openOptionsSheet(
+                                onTap: () => controller.openOptionsSheet(
                                   title: 'Month',
                                   options: controller.monthOptions,
                                   selected: controller.selectedMonth.value,
@@ -136,111 +134,46 @@ class LeaveHistoryView extends GetView<LeaveHistoryController> {
               );
             }),
             Expanded(
-              child: FutureBuilder(
-                future: controller.getLeaves(),
-                builder: (context, snapshot) {
-                  return Column(
-                    crossAxisAlignment: .start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          appSize.size16.w,
-                          appSize.size16.h,
-                          appSize.size16.w,
-                          appSize.size8.h,
-                        ),
-                        child: Obx(
-                          () => Text(
-                            controller.recordsCountLabel,
-                            style: fontStyles.font12LightGrey500.copyWith(
-                              letterSpacing: 0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Obx(() {
-                          final records = controller.filteredRecords;
-                          if (records.isEmpty) {
-                            return Center(
-                              child: Text(
-                                "No leave records found",
-                                style: fontStyles.font14LightGrey400,
+              child: Obx(() {
+                return FutureBuilder(
+                  key: ValueKey(controller.filterVersion.value),
+                  future: controller.leave.value == null
+                      ? controller.getLeaves()
+                      : null,
+                  builder: (context, snapshot) {
+                    return RefreshIndicator(
+                      onRefresh: controller.onRefresh,
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                appSize.size16.w,
+                                appSize.size16.h,
+                                appSize.size16.w,
+                                appSize.size8.h,
                               ),
-                            );
-                          }
-                          return ListView.builder(
-                            padding: EdgeInsets.fromLTRB(
-                              appSize.size16.w,
-                              0,
-                              appSize.size16.w,
-                              appSize.size24.h,
+                              child: Text(
+                                controller.recordsCountLabel,
+                                style: fontStyles.font12LightGrey500.copyWith(
+                                  letterSpacing: 0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                            itemCount: records.length,
-                            itemBuilder: (context, index) {
-                              return LeaveHistoryCard(record: records[index]);
-                            },
-                          );
-                        }),
+                            LeaveRecordBody(),
+                          ],
+                        ),
                       ),
-                    ],
-                  );
-                },
-              ),
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _openOptionsSheet({
-    required String title,
-    required List<String> options,
-    required String selected,
-    required ValueChanged<String> onSelected,
-  }) {
-    customBottomSheet(
-      title: title,
-      child: Column(
-        children: options.map((option) {
-          final isSelected = option == selected;
-          return InkWell(
-            onTap: () {
-              Get.back();
-              onSelected(option);
-            },
-            borderRadius: BorderRadius.circular(appSize.radius12),
-            child: Container(
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: appSize.size8.h),
-              padding: EdgeInsets.symmetric(
-                horizontal: appSize.size14.w,
-                vertical: appSize.size14.h,
-              ),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? appColors.submittedBadgeBg
-                    : appColors.scaffoldGreyColor,
-                borderRadius: BorderRadius.circular(appSize.radius12),
-                border: Border.all(
-                  color: isSelected
-                      ? appColors.brandColor.withValues(alpha: 0.35)
-                      : appColors.strokeColor,
-                ),
-              ),
-              child: Text(
-                option,
-                style: fontStyles.font14Black600.copyWith(
-                  color: isSelected
-                      ? appColors.brandColor
-                      : appColors.blackColor,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

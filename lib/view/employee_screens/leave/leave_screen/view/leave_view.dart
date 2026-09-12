@@ -28,27 +28,27 @@ class LeaveView extends GetView<LeaveController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomTextField(
-                controller: controller.searchController,
-                onChanged: controller.onSearchChanged,
-                hintText: 'Search',
-                maxLines: 1,
-                radius: appSize.radius12,
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: appSize.size14.h,
-                ),
-                decoration: BoxDecoration(
-                  color: appColors.whiteColor,
-                  borderRadius: BorderRadius.circular(appSize.radius12),
-                  border: Border.all(color: appColors.strokeColor),
-                ),
-                prefix: Icon(
-                  Icons.search_rounded,
-                  color: appColors.lightGreyColor,
-                  size: appSize.icon20,
-                ),
-              ),
-              SizedBox(height: appSize.size16.h),
+              // CustomTextField(
+              //   controller: controller.searchController,
+              //   onChanged: controller.onSearchChanged,
+              //   hintText: 'Search',
+              //   maxLines: 1,
+              //   radius: appSize.radius12,
+              //   contentPadding: EdgeInsets.symmetric(
+              //     vertical: appSize.size14.h,
+              //   ),
+              //   decoration: BoxDecoration(
+              //     color: appColors.whiteColor,
+              //     borderRadius: BorderRadius.circular(appSize.radius12),
+              //     border: Border.all(color: appColors.strokeColor),
+              //   ),
+              //   prefix: Icon(
+              //     Icons.search_rounded,
+              //     color: appColors.lightGreyColor,
+              //     size: appSize.icon20,
+              //   ),
+              // ),
+              // SizedBox(height: appSize.size16.h),
               const LeaveCalendar(),
               SizedBox(height: appSize.size16.h),
               ...controller.actions.map(
@@ -58,55 +58,55 @@ class LeaveView extends GetView<LeaveController> {
                 ),
               ),
               SizedBox(height: appSize.size20.h),
-              Obx(() {
-                final events = controller.filteredEvents;
-                return Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(
-                    appSize.size16.w,
-                    appSize.size16.h,
-                    appSize.size16.w,
-                    appSize.size8.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: appColors.whiteColor,
-                    borderRadius: BorderRadius.circular(appSize.radius16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: appColors.blackColor.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Events", style: fontStyles.font16Black700),
-                      SizedBox(height: appSize.size8.h),
-                      if (events.isEmpty)
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: appSize.size24.h,
-                          ),
-                          child: Center(
-                            child: Text(
-                              "No events found",
-                              style: fontStyles.font14LightGrey400,
-                            ),
-                          ),
-                        )
-                      else
-                        ...List.generate(events.length, (index) {
-                          return LeaveEventCard(
-                            event: events[index],
-                            showDivider: index != events.length - 1,
-                          );
-                        }),
-                    ],
-                  ),
-                );
-              }),
+              // Obx(() {
+              //   final events = controller.filteredEvents;
+              //   return Container(
+              //     width: double.infinity,
+              //     padding: EdgeInsets.fromLTRB(
+              //       appSize.size16.w,
+              //       appSize.size16.h,
+              //       appSize.size16.w,
+              //       appSize.size8.h,
+              //     ),
+              //     decoration: BoxDecoration(
+              //       color: appColors.whiteColor,
+              //       borderRadius: BorderRadius.circular(appSize.radius16),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: appColors.blackColor.withValues(alpha: 0.04),
+              //           blurRadius: 10,
+              //           offset: const Offset(0, 6),
+              //         ),
+              //       ],
+              //     ),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Text("Events", style: fontStyles.font16Black700),
+              //         SizedBox(height: appSize.size8.h),
+              //         if (events.isEmpty)
+              //           Padding(
+              //             padding: EdgeInsets.symmetric(
+              //               vertical: appSize.size24.h,
+              //             ),
+              //             child: Center(
+              //               child: Text(
+              //                 "No events found",
+              //                 style: fontStyles.font14LightGrey400,
+              //               ),
+              //             ),
+              //           )
+              //         else
+              //           ...List.generate(events.length, (index) {
+              //             return LeaveEventCard(
+              //               event: events[index],
+              //               showDivider: index != events.length - 1,
+              //             );
+              //           }),
+              //       ],
+              //     ),
+              //   );
+              // }),
             ],
           ),
         ),

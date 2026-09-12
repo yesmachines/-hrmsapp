@@ -1,184 +1,131 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import 'package:yes_hrm/view/employee_screens/visits/visits_listing_screen/service/model/visit_model.dart';
+import 'package:yes_hrm/view/employee_screens/visits/visits_listing_screen/service/service.dart';
 
 class VisitsController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
   final RxString searchQuery = ''.obs;
   final Rx<VisitTab> selectedTab = VisitTab.today.obs;
+  final Rxn<VisitStatus> selectedStatus = Rxn();
+  final Rxn<List<VisitModel>> visits = Rxn(null);
 
-  late final List<VisitModel> visits = [
-    VisitModel(
-      id: '1',
-      type: VisitType.customerMeeting,
-      status: VisitStatus.approved,
-      title: 'Customer Meeting',
-      date: DateTime(2026, 8, 18),
-      time: '10:30 AM',
-      location: 'Dubai',
-      purpose: 'Client Meeting',
-      assignedTask: 'Product Presentation',
-      tab: VisitTab.today,
-      visitorName: 'ABC Company Representative',
-      visitorContact: '+91 7653 278 654',
-      purposeDetail:
-          'Client meeting regarding the new project. Discussion will cover scope, timeline, deliverables, and budget allocation for Q3 2026.',
-      assignees: const [
-        VisitAssignee(
-          id: 'a1',
-          name: 'Ahmed Al Rashid',
-          role: 'Senior Software Engineer',
-          initials: 'AA',
-        ),
-        VisitAssignee(
-          id: 'a2',
-          name: 'Sara Khan',
-          role: 'Project Manager',
-          initials: 'SK',
-        ),
-      ],
-      approvedBy: 'Mohammed Hassan, HR Director',
-      approvedDate: DateTime(2026, 8, 12),
-      approvedRemarks:
-          'Approved for client meeting. Please ensure all presentation materials are prepared.',
-      adminInstructions:
-          'Please carry the required documents for the meeting. Visitor parking has been arranged at Gate B. Reception will guide the visitor to Conference Room 3A.',
-      attachments: const [
-        VisitAttachment(name: 'Meeting_Agenda.pdf', size: '245 KB'),
-      ],
-      submittedDate: DateTime(2026, 8, 12),
-    ),
-    VisitModel(
-      id: '2',
-      type: VisitType.customerMeeting,
-      status: VisitStatus.approved,
-      title: 'Customer Meeting',
-      date: DateTime(2026, 8, 18),
-      time: '02:00 PM',
-      location: 'Dubai',
-      purpose: 'Client Meeting',
-      assignedTask: 'Product Presentation',
-      tab: VisitTab.today,
-      purposeDetail: 'Follow-up discussion with the client team.',
-      assignees: const [
-        VisitAssignee(
-          id: 'a2',
-          name: 'Sara Khan',
-          role: 'Project Manager',
-          initials: 'SK',
-        ),
-      ],
-      submittedDate: DateTime(2026, 8, 15),
-    ),
-    VisitModel(
-      id: '3',
-      type: VisitType.customerMeeting,
-      status: VisitStatus.approved,
-      title: 'Customer Meeting',
-      date: DateTime(2026, 8, 20),
-      time: '10:30 AM',
-      location: 'Dubai',
-      purpose: 'Client Meeting',
-      assignedTask: 'Product Presentation',
-      tab: VisitTab.upcoming,
-      purposeDetail: 'Upcoming client presentation.',
-      assignees: const [
-        VisitAssignee(
-          id: 'a1',
-          name: 'Ahmed Al Rashid',
-          role: 'Senior Software Engineer',
-          initials: 'AA',
-        ),
-      ],
-      submittedDate: DateTime(2026, 8, 16),
-    ),
-    VisitModel(
-      id: '4',
-      type: VisitType.supplierVisit,
-      status: VisitStatus.approved,
-      title: 'Supplier Visit',
-      date: DateTime(2026, 8, 22),
-      time: '11:00 AM',
-      location: 'Abu Dhabi',
-      purpose: 'Supplier Discussion',
-      assignedTask: 'Supplier Evaluation',
-      tab: VisitTab.upcoming,
-      purposeDetail: 'Evaluate new supplier partnership.',
-      submittedDate: DateTime(2026, 8, 17),
-    ),
-    VisitModel(
-      id: '5',
-      type: VisitType.customerMeeting,
-      status: VisitStatus.completed,
-      title: 'Customer Meeting',
-      date: DateTime(2026, 8, 15),
-      time: '10:30 AM',
-      location: 'Dubai',
-      purpose: 'Client Meeting',
-      assignedTask: 'Product Presentation',
-      tab: VisitTab.history,
-      purposeDetail: 'Completed client meeting.',
-      submittedDate: DateTime(2026, 8, 10),
-    ),
-    VisitModel(
-      id: '6',
-      type: VisitType.supplierVisit,
-      status: VisitStatus.approved,
-      title: 'Supplier Visit',
-      date: DateTime(2026, 8, 10),
-      time: '09:00 AM',
-      location: 'Abu Dhabi',
-      purpose: 'Supplier Discussion',
-      assignedTask: 'Supplier Evaluation',
-      tab: VisitTab.history,
-      purposeDetail: 'Approved supplier visit completed.',
-      submittedDate: DateTime(2026, 8, 5),
-    ),
-    VisitModel(
-      id: '7',
-      type: VisitType.customerMeeting,
-      status: VisitStatus.rejected,
-      title: 'Customer Meeting',
-      date: DateTime(2026, 8, 8),
-      time: '03:00 PM',
-      location: 'Dubai',
-      purpose: 'Client Meeting',
-      assignedTask: 'Demo Session',
-      tab: VisitTab.history,
-      purposeDetail: 'Visit request was rejected.',
-      submittedDate: DateTime(2026, 8, 3),
-    ),
-  ];
+  int currentPage = 1;
+  int lastPage = 1;
+  int _fetchId = 0;
+  final RxInt filterVersion = 0.obs;
+  Timer? _searchDebounce;
 
-  List<VisitModel> get filteredVisits {
-    final query = searchQuery.value.trim().toLowerCase();
-    return visits.where((visit) {
-      if (visit.tab != selectedTab.value) return false;
-      if (query.isEmpty) return true;
-      return visit.title.toLowerCase().contains(query) ||
-          visit.type.label.toLowerCase().contains(query) ||
-          visit.location.toLowerCase().contains(query) ||
-          visit.purpose.toLowerCase().contains(query) ||
-          visit.assignedTask.toLowerCase().contains(query);
-    }).toList();
+  @override
+  void onInit() {
+    scrollController.addListener(() {
+      if (scrollController.position.extentAfter == 0 &&
+          currentPage <= lastPage) {
+        if (currentPage != lastPage) {
+          currentPage++;
+          getVisits();
+        }
+      }
+    });
+    super.onInit();
   }
 
-  void onSearchChanged(String value) => searchQuery.value = value;
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), applyFilters);
+  }
 
-  void onTabChanged(VisitTab tab) => selectedTab.value = tab;
+  void onTabChanged(VisitTab tab) {
+    if (selectedTab.value == tab) return;
+    selectedTab.value = tab;
+    applyFilters();
+  }
 
-  void onAddVisit() => Get.toNamed(appRoutes.requestVisit);
+  void applyFilters() {
+    onRefresh();
+  }
+
+  void onAddVisit() {
+    Get.toNamed(appRoutes.requestVisit)?.then((value) {
+      if (value == true) onRefresh();
+    });
+  }
 
   void onViewVisit(VisitModel visit) {
-    Get.toNamed(appRoutes.visitDetails, arguments: visit);
+    Get.toNamed(appRoutes.visitDetails, arguments: visit.id);
   }
 
   void onFilterTap() {
-    notificationHandler.sendNotification(
-      message: 'Visit filters coming soon',
-      notificationType: .warning,
+    customBottomSheet(
+      title: 'Status',
+      child: Column(
+        children: [
+          _statusOption(
+            label: 'All',
+            isSelected: selectedStatus.value == null,
+            onTap: () {
+              selectedStatus.value = null;
+              Get.back();
+              applyFilters();
+            },
+          ),
+          ...VisitStatus.values.map((status) {
+            return _statusOption(
+              label: status.label,
+              isSelected: selectedStatus.value == status,
+              onTap: () {
+                selectedStatus.value = status;
+                Get.back();
+                applyFilters();
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusOption({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(appSize.radius12),
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: appSize.size8.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: appSize.size14.w,
+          vertical: appSize.size14.h,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? appColors.submittedBadgeBg
+              : appColors.scaffoldGreyColor,
+          borderRadius: BorderRadius.circular(appSize.radius12),
+          border: Border.all(
+            color: isSelected
+                ? appColors.brandColor.withValues(alpha: 0.35)
+                : appColors.strokeColor,
+          ),
+        ),
+        child: Text(
+          label,
+          style: fontStyles.font14Black600.copyWith(
+            color: isSelected ? appColors.brandColor : appColors.blackColor,
+          ),
+        ),
+      ),
     );
   }
 
@@ -210,9 +157,46 @@ class VisitsController extends GetxController with Bindings {
     }
   }
 
+  Future<void> onRefresh() async {
+    currentPage = 1;
+    lastPage = 1;
+    visits.value = null;
+    filterVersion.value++;
+  }
+
+  Future<List<VisitModel>> getVisits() async {
+    final fetchId = ++_fetchId;
+    return VisitsService.getVisits(
+          page: currentPage,
+          dateFilter: selectedTab.value,
+          search: searchQuery.value,
+          status: selectedStatus.value,
+        )
+        .then((value) {
+          if (fetchId != _fetchId) return value.visits;
+          currentPage = value.pagination.currentPage;
+          lastPage = value.pagination.lastPage;
+          if (visits.value == null) {
+            visits.value = value.visits;
+          } else {
+            visits.value = [...visits.value!, ...value.visits];
+          }
+          return value.visits;
+        })
+        .onError((error, stackTrace) {
+          if (fetchId != _fetchId) throw Exception("");
+          if (visits.value == null) {
+            visits.value = [];
+          }
+          throw Exception("");
+        });
+  }
+
   @override
   void onClose() {
+    _searchDebounce?.cancel();
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 

@@ -22,7 +22,9 @@ class ApplyLeaveView extends GetView<ApplyLeaveController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appColors.scaffoldGreyColor,
-      appBar: TitleAppBar(title: "Apply Leave"),
+      appBar: TitleAppBar(
+        title: controller.isEditMode ? "Edit Leave" : "Apply Leave",
+      ),
       body: SafeArea(
         child: FutureBuilder(
           future: controller.leaveMetaData.value == null
@@ -32,6 +34,10 @@ class ApplyLeaveView extends GetView<ApplyLeaveController> {
             if (controller.leaveMetaData.value == null &&
                 controller.leaveMetaDataHasError.value == false) {
               return Center(child: LoadingScreen());
+            } else if (controller.editNotAllowed.value) {
+              return NoDataPage(
+                message: "Only requested leaves can be edited.",
+              );
             } else if (controller.leaveMetaData.value != null) {
               return SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(
@@ -183,12 +189,19 @@ class ApplyLeaveView extends GetView<ApplyLeaveController> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: CustomButton(
-        margin: EdgeInsets.symmetric(horizontal: appSize.size16.w),
-        buttonWidth: double.infinity,
-        buttonName: 'Submit Leave Request',
-        onPressed: controller.submitLeave,
-      ),
+      floatingActionButton: Obx(() {
+        if (controller.editNotAllowed.value) {
+          return const SizedBox.shrink();
+        }
+        return CustomButton(
+          margin: EdgeInsets.symmetric(horizontal: appSize.size16.w),
+          buttonWidth: double.infinity,
+          buttonName: controller.isEditMode
+              ? 'Update Leave Request'
+              : 'Submit Leave Request',
+          onPressed: controller.submitLeave,
+        );
+      }),
     );
   }
 }

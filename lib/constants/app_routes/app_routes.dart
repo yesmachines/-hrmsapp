@@ -48,6 +48,8 @@ import '../../view/employee_screens/ideas/ideas_listing_screen/controller/contro
 import '../../view/employee_screens/ideas/ideas_listing_screen/view/ideas_view.dart';
 import '../../view/employee_screens/leave/apply_leave_screen/controller/controller.dart';
 import '../../view/employee_screens/leave/apply_leave_screen/view/apply_leave_view.dart';
+import '../../view/employee_screens/leave/leave_view_screen/controller/controller.dart';
+import '../../view/employee_screens/leave/leave_view_screen/view/leave_view_screen.dart';
 import '../../view/employee_screens/leave/leave_history_screen/controller/controller.dart';
 import '../../view/employee_screens/leave/leave_history_screen/view/leave_history_view.dart';
 import '../../view/employee_screens/leave/leave_screen/controller/controller.dart';
@@ -86,6 +88,7 @@ class AppRoutes {
   String leave = "/leave";
   String leaveHistory = "/leaveHistory";
   String applyLeave = "/applyLeave";
+  String leaveView = "/leaveView";
   String employeeDirectory = "/employeeDirectory";
   String employeeDetails = "/employeeDetails";
   String visits = "/visits";
@@ -193,6 +196,11 @@ List<GetPage<dynamic>> routes = [
     name: appRoutes.applyLeave,
     page: () => const ApplyLeaveView(),
     binding: ApplyLeaveController(),
+  ),
+  GetPage(
+    name: appRoutes.leaveView,
+    page: () => const LeaveViewScreen(),
+    binding: LeaveViewController(),
   ),
   GetPage(
     name: appRoutes.employeeDirectory,

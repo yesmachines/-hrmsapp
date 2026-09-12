@@ -6,7 +6,6 @@ import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/control
 
 import '../../../model/leave_model.dart';
 import '../../../model/leave_status_enum.dart';
-import '../../../model/leave_type_enum.dart';
 
 class LeaveHistoryCard extends GetView<LeaveHistoryController> {
   const LeaveHistoryCard({super.key, required this.record});
@@ -38,7 +37,7 @@ class LeaveHistoryCard extends GetView<LeaveHistoryController> {
           Row(
             children: [
               _Chip(
-                label: record.type.label,
+                label: record.type.leaveType,
                 bg: typeStyle.bg,
                 text: typeStyle.text,
               ),
@@ -130,12 +129,14 @@ class LeaveHistoryCard extends GetView<LeaveHistoryController> {
                 label: 'View',
                 onTap: () => controller.onView(record),
               ),
-              SizedBox(width: appSize.size8.w),
-              _ActionButton(
-                icon: Icons.edit_outlined,
-                label: 'Edit',
-                onTap: () => controller.onEdit(record),
-              ),
+              if (record.canEdit) ...[
+                SizedBox(width: appSize.size8.w),
+                _ActionButton(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit',
+                  onTap: () => controller.onEdit(record),
+                ),
+              ],
             ],
           ),
         ],

@@ -1,32 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/service/model/leave_meta_model.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_history_screen/service/service.dart';
 
+import '../../../../../utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import '../../model/leave_model.dart';
 import '../../model/leave_status_enum.dart';
-import '../../model/leave_type_enum.dart';
-
-
+import '../../model/leave_type_model.dart';
 
 class LeaveHistoryController extends GetxController with Bindings {
   final RxBool showFilters = true.obs;
 
   final RxString selectedLeaveType = 'All Types'.obs;
-  final RxString selectedYear = '2026'.obs;
+  final RxString selectedYear = 'All Years'.obs;
   final RxString selectedMonth = 'All Months'.obs;
   final Rxn<DateTimeRange> selectedDateRange = Rxn();
-  final Rxn<List> leave = Rxn(null);
+  final Rxn<List<LeaveModel>> leave = Rxn(null);
+  final RxList<LeaveTypeModel> leaveTypes = <LeaveTypeModel>[].obs;
 
   ScrollController scrollController = ScrollController();
 
   int currentPage = 1;
   int lastPage = 1;
+  int totalRecords = 0;
+  int _fetchId = 0;
+  final RxInt filterVersion = 0.obs;
 
-  final leaveTypeOptions = const ['All Types', 'Annual Leave', 'Sick Leave'];
+  List<String> get leaveTypeOptions => [
+    'All Types',
+    ...leaveTypes
+        .map((type) => type.leaveName)
+        .where((name) => name.isNotEmpty),
+  ];
 
-  final yearOptions = const ['2026', '2025', '2024'];
+  final yearOptions = const ['All Years', '2026', '2025', '2024'];
 
   final monthOptions = const [
     'All Months',
@@ -44,78 +54,6 @@ class LeaveHistoryController extends GetxController with Bindings {
     'December',
   ];
 
-  late final List<LeaveModel> records = [
-    LeaveModel(
-      id: '1',
-      type: LeaveType.annualLeave,
-      status: LeaveStatus.requested,
-      fromDate: DateTime(2026, 7, 25),
-      toDate: DateTime(2026, 8, 25),
-      appliedOn: DateTime(2026, 7, 20),
-    ),
-    LeaveModel(
-      id: '2',
-      type: LeaveType.sickLeave,
-      status: LeaveStatus.approved,
-      fromDate: DateTime(2026, 7, 14),
-      toDate: DateTime(2026, 7, 15),
-      appliedOn: DateTime(2026, 7, 12),
-    ),
-    LeaveModel(
-      id: '3',
-      type: LeaveType.annualLeave,
-      status: LeaveStatus.rejected,
-      fromDate: DateTime(2026, 6, 1),
-      toDate: DateTime(2026, 6, 5),
-      appliedOn: DateTime(2026, 5, 28),
-    ),
-    LeaveModel(
-      id: '4',
-      type: LeaveType.sickLeave,
-      status: LeaveStatus.requested,
-      fromDate: DateTime(2026, 8, 10),
-      toDate: DateTime(2026, 8, 12),
-      appliedOn: DateTime(2026, 8, 5),
-    ),
-  ];
-
-  List<LeaveModel> get filteredRecords {
-    return records.where((record) {
-      if (selectedLeaveType.value != 'All Types' &&
-          record.type.label != selectedLeaveType.value) {
-        return false;
-      }
-
-      if (record.fromDate.year.toString() != selectedYear.value &&
-          record.toDate.year.toString() != selectedYear.value) {
-        return false;
-      }
-
-      if (selectedMonth.value != 'All Months') {
-        final monthIndex = monthOptions.indexOf(selectedMonth.value);
-        final matchesMonth =
-            record.fromDate.month == monthIndex ||
-            record.toDate.month == monthIndex;
-        if (!matchesMonth) return false;
-      }
-
-      final range = selectedDateRange.value;
-      if (range != null) {
-        final overlaps =
-            !record.toDate.isBefore(range.start) &&
-            !record.fromDate.isAfter(range.end);
-        if (!overlaps) return false;
-      }
-
-      return true;
-    }).toList();
-  }
-
-  String get recordsCountLabel {
-    final count = filteredRecords.length.toString().padLeft(2, '0');
-    return 'Showing $count Leave Records';
-  }
-
   String get dateRangeLabel {
     final range = selectedDateRange.value;
     if (range == null) return 'Select Dates';
@@ -123,8 +61,16 @@ class LeaveHistoryController extends GetxController with Bindings {
     return '${format.format(range.start)} - ${format.format(range.end)}';
   }
 
+  String get recordsCountLabel {
+    final count = (totalRecords > 0 ? totalRecords : leave.value?.length ?? 0)
+        .toString()
+        .padLeft(2, '0');
+    return 'Showing $count Leave Records';
+  }
+
   @override
   void onInit() {
+    getLeaveTypes();
     scrollController.addListener(() {
       if (scrollController.position.extentAfter == 0 &&
           currentPage <= lastPage) {
@@ -143,14 +89,71 @@ class LeaveHistoryController extends GetxController with Bindings {
 
   void onLeaveTypeChanged(String value) {
     selectedLeaveType.value = value;
+    applyFilters();
   }
 
   void onYearChanged(String value) {
     selectedYear.value = value;
+    applyFilters();
   }
 
   void onMonthChanged(String value) {
     selectedMonth.value = value;
+    applyFilters();
+  }
+
+  void applyFilters() {
+    onRefresh();
+  }
+
+  openOptionsSheet({
+    required String title,
+    required List<String> options,
+    required String selected,
+    required ValueChanged<String> onSelected,
+  }) {
+    customBottomSheet(
+      title: title,
+      child: Column(
+        children: options.map((option) {
+          final isSelected = option == selected;
+          return InkWell(
+            onTap: () {
+              Get.back();
+              onSelected(option);
+            },
+            borderRadius: BorderRadius.circular(appSize.radius12),
+            child: Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(bottom: appSize.size8.h),
+              padding: EdgeInsets.symmetric(
+                horizontal: appSize.size14.w,
+                vertical: appSize.size14.h,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? appColors.submittedBadgeBg
+                    : appColors.scaffoldGreyColor,
+                borderRadius: BorderRadius.circular(appSize.radius12),
+                border: Border.all(
+                  color: isSelected
+                      ? appColors.brandColor.withValues(alpha: 0.35)
+                      : appColors.strokeColor,
+                ),
+              ),
+              child: Text(
+                option,
+                style: fontStyles.font14Black600.copyWith(
+                  color: isSelected
+                      ? appColors.brandColor
+                      : appColors.blackColor,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   Future<void> pickDateRange() async {
@@ -159,6 +162,7 @@ class LeaveHistoryController extends GetxController with Bindings {
       context: Get.context!,
       firstDate: DateTime(2024),
       lastDate: DateTime(2027, 12, 31),
+
       initialDateRange:
           selectedDateRange.value ??
           DateTimeRange(start: now, end: now.add(const Duration(days: 7))),
@@ -178,26 +182,38 @@ class LeaveHistoryController extends GetxController with Bindings {
     );
     if (picked != null) {
       selectedDateRange.value = picked;
+      applyFilters();
     }
   }
 
   void clearDateRange() {
     selectedDateRange.value = null;
+    applyFilters();
   }
 
   String formatDate(DateTime date) => DateFormat('dd MMM yyyy').format(date);
 
   LeaveTypeStyle typeStyle(LeaveType type) {
-    switch (type) {
-      case LeaveType.annualLeave:
+    switch (type.leaveType.toLowerCase()) {
+      case "annual leave":
         return LeaveTypeStyle(
           bg: appColors.submittedBadgeBg,
           text: appColors.submittedBadgeText,
         );
-      case LeaveType.sickLeave:
+      case "sick leave":
         return LeaveTypeStyle(
           bg: appColors.profileIconPurpleBg,
           text: appColors.profileIconPurple,
+        );
+      case "other":
+        return LeaveTypeStyle(
+          bg: appColors.profileIconTealBg,
+          text: appColors.profileIconTeal,
+        );
+      default:
+        return LeaveTypeStyle(
+          bg: appColors.submittedBadgeBg,
+          text: appColors.submittedBadgeText,
         );
     }
   }
@@ -225,32 +241,59 @@ class LeaveHistoryController extends GetxController with Bindings {
   }
 
   void onView(LeaveModel record) {
-    notificationHandler.sendNotification(
-      message: "View ${record.type.label}",
-      notificationType: .success,
-    );
+    Get.toNamed(appRoutes.leaveView, arguments: record.id);
   }
 
   void onEdit(LeaveModel record) {
-    notificationHandler.sendNotification(
-      message: "Edit ${record.type.label}",
-      notificationType: .warning,
-    );
+    if (!record.canEdit) {
+      notificationHandler.sendNotification(
+        message: "Only requested leaves can be edited",
+        notificationType: .warning,
+      );
+      return;
+    }
+    Get.toNamed(appRoutes.applyLeave, arguments: record.id)?.then((value) {
+      if (value == true) onRefresh();
+    });
   }
 
-  Future getLeaves() async {
-    return LeaveHistoryService.getLeaves(page: currentPage)
+  Future<void> onRefresh() async {
+    currentPage = 1;
+    lastPage = 1;
+    totalRecords = 0;
+    leave.value = null;
+    filterVersion.value++;
+  }
+
+  Future<List<LeaveTypeModel>> getLeaveTypes() async {
+    return LeaveHistoryService.getLeaveTypes()
         .then((value) {
+          leaveTypes.assignAll(value);
+          return value;
+        })
+        .onError((error, stackTrace) {
+          leaveTypes.clear();
+          throw Exception("");
+        });
+  }
+
+  Future<List<LeaveModel>> getLeaves() async {
+    final fetchId = ++_fetchId;
+    return LeaveHistoryService.getLeaves(page: currentPage, filters: {})
+        .then((value) {
+          if (fetchId != _fetchId) return value.leaves;
           currentPage = value.pagination.currentPage;
           lastPage = value.pagination.lastPage;
+          totalRecords = value.pagination.totalPages;
           if (leave.value == null) {
             leave.value = value.leaves;
           } else {
-            leave.value = leave.value! + value.leaves;
+            leave.value = [...leave.value!, ...value.leaves];
           }
           return value.leaves;
         })
         .onError((error, stackTrace) {
+          if (fetchId != _fetchId) throw Exception("");
           if (leave.value == null) {
             leave.value = [];
           }
@@ -261,5 +304,11 @@ class LeaveHistoryController extends GetxController with Bindings {
   @override
   void dependencies() {
     Get.put(LeaveHistoryController());
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
   }
 }

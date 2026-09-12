@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
 import 'package:yes_hrm/view/employee_screens/visits/visits_listing_screen/controller/controller.dart';
@@ -62,24 +63,35 @@ class VisitsView extends GetView<VisitsController> {
                     ),
                   ),
                   SizedBox(width: appSize.size10.w),
-                  InkWell(
-                    onTap: controller.onFilterTap,
-                    borderRadius: BorderRadius.circular(appSize.radius12),
-                    child: Container(
-                      width: 48.w,
-                      height: 48.w,
-                      decoration: BoxDecoration(
-                        color: appColors.whiteColor,
-                        borderRadius: BorderRadius.circular(appSize.radius12),
-                        border: Border.all(color: appColors.strokeColor),
+                  Obx(() {
+                    final hasFilter = controller.selectedStatus.value != null;
+                    return InkWell(
+                      onTap: controller.onFilterTap,
+                      borderRadius: BorderRadius.circular(appSize.radius12),
+                      child: Container(
+                        width: 48.w,
+                        height: 48.w,
+                        decoration: BoxDecoration(
+                          color: hasFilter
+                              ? appColors.submittedBadgeBg
+                              : appColors.whiteColor,
+                          borderRadius: BorderRadius.circular(appSize.radius12),
+                          border: Border.all(
+                            color: hasFilter
+                                ? appColors.brandColor.withValues(alpha: 0.35)
+                                : appColors.strokeColor,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: hasFilter
+                              ? appColors.brandColor
+                              : appColors.blackColor,
+                          size: 20.sp,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.tune_rounded,
-                        color: appColors.blackColor,
-                        size: 20.sp,
-                      ),
-                    ),
-                  ),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -109,11 +121,12 @@ class VisitsView extends GetView<VisitsController> {
                               color: isSelected
                                   ? appColors.brandColor
                                   : Colors.transparent,
-                              borderRadius:
-                                  BorderRadius.circular(appSize.radius60),
+                              borderRadius: BorderRadius.circular(
+                                appSize.radius60,
+                              ),
                             ),
                             child: Text(
-                              tab.name[0].toUpperCase() + tab.name.substring(1),
+                              tab.label,
                               textAlign: TextAlign.center,
                               style: fontStyles.font12LightGrey500.copyWith(
                                 color: isSelected
@@ -134,18 +147,43 @@ class VisitsView extends GetView<VisitsController> {
             SizedBox(height: appSize.size12.h),
             Expanded(
               child: Obx(() {
-                final visits = controller.filteredVisits;
-                if (visits.isEmpty) return const NoDataPage();
-                return ListView.builder(
-                  padding: EdgeInsets.fromLTRB(
-                    appSize.size16.w,
-                    0,
-                    appSize.size16.w,
-                    90.h,
-                  ),
-                  itemCount: visits.length,
-                  itemBuilder: (context, index) {
-                    return VisitCard(visit: visits[index]);
+                return FutureBuilder(
+                  key: ValueKey(controller.filterVersion.value),
+                  future: controller.visits.value == null
+                      ? controller.getVisits()
+                      : null,
+                  builder: (context, snapshot) {
+                    if (controller.visits.value == null) {
+                      return const LoadingScreen();
+                    } else if (controller.visits.value!.isNotEmpty) {
+                      return RefreshIndicator(
+                        onRefresh: controller.onRefresh,
+                        child: ListView.builder(
+                          controller: controller.scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.fromLTRB(
+                            appSize.size16.w,
+                            0,
+                            appSize.size16.w,
+                            90.h,
+                          ),
+                          itemCount: controller.visits.value!.length,
+                          itemBuilder: (context, index) {
+                            return VisitCard(
+                              visit: controller.visits.value![index],
+                            );
+                          },
+                        ),
+                      );
+                    } else {
+                      return RefreshIndicator(
+                        onRefresh: controller.onRefresh,
+                        child: const SingleChildScrollView(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(height: 400, child: NoDataPage()),
+                        ),
+                      );
+                    }
                   },
                 );
               }),

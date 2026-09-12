@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import 'package:yes_hrm/view/employee_screens/employee_directory/service/model/employee_directory_model.dart';
+import 'package:yes_hrm/view/employee_screens/employee_directory/service/service.dart';
 
 class EmployeeDirectoryController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
   final RxString searchQuery = ''.obs;
   final RxString selectedDepartment = 'Department'.obs;
+  final Rxn<List<EmployeeDirectoryModel>> employees = Rxn(null);
 
   final departments = const [
     'Department',
@@ -17,67 +23,40 @@ class EmployeeDirectoryController extends GetxController with Bindings {
     'Marketing Department',
   ];
 
-  late final List<EmployeeDirectoryModel> employees = [
-    const EmployeeDirectoryModel(
-      id: '1',
-      name: 'Swathika K',
-      designation: 'UI/UX Designer',
-      department: 'Development Department',
-      email: 'swathika@company.com',
-      phone: '+971 50 123 457',
-      joinDate: '15 May 2021',
-    ),
-    const EmployeeDirectoryModel(
-      id: '2',
-      name: 'Ahmed Hassan',
-      designation: 'Sales Executive',
-      department: 'Sales Department',
-      email: 'ahmed@company.com',
-      phone: '+9 71 50 234 568',
-    ),
-    const EmployeeDirectoryModel(
-      id: '3',
-      name: 'Priya Nair',
-      designation: 'HR Manager',
-      department: 'HR Department',
-      email: 'priya@company.com',
-      phone: '+9 71 50 345 679',
-    ),
-    const EmployeeDirectoryModel(
-      id: '4',
-      name: 'Mohammed Ali',
-      designation: 'Flutter Developer',
-      department: 'Development Department',
-      email: 'mohammed@company.com',
-      phone: '+9 71 50 456 780',
-    ),
-    const EmployeeDirectoryModel(
-      id: '5',
-      name: 'Sara Khan',
-      designation: 'Marketing Lead',
-      department: 'Marketing Department',
-      email: 'sara@company.com',
-      phone: '+9 71 50 567 891',
-    ),
-  ];
+  int currentPage = 1;
+  int lastPage = 1;
+  int _fetchId = 0;
+  final RxInt filterVersion = 0.obs;
+  Timer? _searchDebounce;
 
-  List<EmployeeDirectoryModel> get filteredEmployees {
-    final query = searchQuery.value.trim().toLowerCase();
-    return employees.where((employee) {
-      final matchesDepartment = selectedDepartment.value == 'Department' ||
-          employee.department == selectedDepartment.value;
-      if (!matchesDepartment) return false;
-      if (query.isEmpty) return true;
-      return employee.name.toLowerCase().contains(query) ||
-          employee.designation.toLowerCase().contains(query) ||
-          employee.department.toLowerCase().contains(query) ||
-          employee.email.toLowerCase().contains(query) ||
-          employee.phone.toLowerCase().contains(query);
-    }).toList();
+  String? get _departmentFilter {
+    final department = selectedDepartment.value;
+    if (department == 'Department') return null;
+    return department;
+  }
+
+  @override
+  void onInit() {
+    scrollController.addListener(() {
+      if (scrollController.position.extentAfter == 0 &&
+          currentPage <= lastPage) {
+        if (currentPage != lastPage) {
+          currentPage++;
+          getEmployees();
+        }
+      }
+    });
+    super.onInit();
   }
 
   void onSearchChanged(String value) {
     searchQuery.value = value;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), applyFilters);
+  }
+
+  void applyFilters() {
+    onRefresh();
   }
 
   void onDepartmentTap() {
@@ -90,14 +69,15 @@ class EmployeeDirectoryController extends GetxController with Bindings {
             onTap: () {
               selectedDepartment.value = department;
               Get.back();
+              applyFilters();
             },
             borderRadius: BorderRadius.circular(appSize.radius12),
             child: Container(
               width: double.infinity,
-              margin: EdgeInsets.only(bottom: appSize.size8),
+              margin: EdgeInsets.only(bottom: appSize.size8.h),
               padding: EdgeInsets.symmetric(
-                horizontal: appSize.size14,
-                vertical: appSize.size14,
+                horizontal: appSize.size14.w,
+                vertical: appSize.size14.h,
               ),
               decoration: BoxDecoration(
                 color: selected
@@ -113,8 +93,7 @@ class EmployeeDirectoryController extends GetxController with Bindings {
               child: Text(
                 department == 'Department' ? 'All Departments' : department,
                 style: fontStyles.font14Black600.copyWith(
-                  color:
-                      selected ? appColors.brandColor : appColors.blackColor,
+                  color: selected ? appColors.brandColor : appColors.blackColor,
                 ),
               ),
             ),
@@ -128,9 +107,45 @@ class EmployeeDirectoryController extends GetxController with Bindings {
     Get.toNamed(appRoutes.employeeDetails, arguments: employee);
   }
 
+  Future<void> onRefresh() async {
+    currentPage = 1;
+    lastPage = 1;
+    employees.value = null;
+    filterVersion.value++;
+  }
+
+  Future<List<EmployeeDirectoryModel>> getEmployees() async {
+    final fetchId = ++_fetchId;
+    return EmployeeDirectoryService.getEmployees(
+          page: currentPage,
+          search: searchQuery.value,
+          department: _departmentFilter,
+        )
+        .then((value) {
+          if (fetchId != _fetchId) return value.employees;
+          currentPage = value.pagination.currentPage;
+          lastPage = value.pagination.lastPage;
+          if (employees.value == null) {
+            employees.value = value.employees;
+          } else {
+            employees.value = [...employees.value!, ...value.employees];
+          }
+          return value.employees;
+        })
+        .onError((error, stackTrace) {
+          if (fetchId != _fetchId) throw Exception("");
+          if (employees.value == null) {
+            employees.value = [];
+          }
+          throw Exception("");
+        });
+  }
+
   @override
   void onClose() {
+    _searchDebounce?.cancel();
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 

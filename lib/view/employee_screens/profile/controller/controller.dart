@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
+import 'package:yes_hrm/utils/middleware/api_call_handler/api_call_handler.dart';
+import 'package:yes_hrm/view/authentication/login_screen/service/service.dart';
 
 class ProfileMenuItem {
   const ProfileMenuItem({
@@ -84,6 +87,17 @@ class ProfileController extends GetxController with Bindings {
       default:
         break;
     }
+  }
+
+  Future<void> onLogout() async {
+    loadingScreen();
+    try {
+      await LoginService.logout();
+    } catch (_) {}
+    await sharedDataHandler.clearSharedData();
+    resetDioClient();
+    Get.back();
+    Get.offAllNamed(appRoutes.loginScreen);
   }
 
   @override
