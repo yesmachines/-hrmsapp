@@ -7,6 +7,7 @@ import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
 import 'package:yes_hrm/view/employee_screens/dashboard/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/documents/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/documents/view/widgets/document_category_card.dart';
+import 'package:yes_hrm/view/employee_screens/profile/view/widgets/profile_loading_widget.dart';
 
 class DocumentsView extends GetView<DocumentsController> {
   const DocumentsView({super.key});
@@ -75,34 +76,59 @@ class DocumentsView extends GetView<DocumentsController> {
           ),
           SizedBox(height: appSize.size16.h),
           Expanded(
-            child: Obx(() {
-              final categories = controller.filteredCategories;
-              if (categories.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No documents found',
-                    style: fontStyles.font14LightGrey400,
-                  ),
-                );
-              }
-              return ListView.separated(
-                padding: EdgeInsets.fromLTRB(
-                  appSize.size16.w,
-                  0,
-                  appSize.size16.w,
-                  appSize.size100.h,
-                ),
-                itemCount: categories.length,
-                separatorBuilder: (_, _) => SizedBox(height: appSize.size12.h),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return DocumentCategoryCard(
-                    category: category,
-                    onTap: () => controller.onCategoryTap(category),
-                  );
+            child: Obx(
+                  () => FutureBuilder(
+                future: controller.documentsList.value == null
+                    ? controller.getDocuments()
+                    : null,
+                builder: (context, snapshot) {
+                  if (controller.documentsList.value == null &&
+                      controller.hasError.value == false) {
+                    return const ProfileLoadingWidget();
+                  } else if (controller.documentsList.value != null &&
+                      controller.documentsList.value!.isNotEmpty) {
+
+                    final categories = controller.filteredCategories;
+
+                    if (categories.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No documents found',
+                          style: fontStyles.font14LightGrey400,
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: EdgeInsets.fromLTRB(
+                        appSize.size16.w,
+                        0,
+                        appSize.size16.w,
+                        appSize.size100.h,
+                      ),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) =>
+                          SizedBox(height: appSize.size12.h),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+
+                        return DocumentCategoryCard(
+                          category: category,
+                          onTap: () => controller.onCategoryTap(category),
+                        );
+                      },
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        'No documents found',
+                        style: fontStyles.font14LightGrey400,
+                      ),
+                    );
+                  }
                 },
-              );
-            }),
+              ),
+            ),
           ),
         ],
       ),

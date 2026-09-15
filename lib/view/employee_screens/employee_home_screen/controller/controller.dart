@@ -3,8 +3,28 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/view/employee_screens/employee_home_screen/service/model/home_screen_tile_model.dart';
 
 import '../../../../main.dart';
+import '../../profile/service/model/profile_model.dart';
+import '../../profile/service/service.dart';
 
 class HomeScreenController extends GetxController with Bindings {
+
+  Rxn<ProfileModel> profileData = Rxn(null);
+  RxBool hasError = RxBool(false);
+
+  Future<ProfileModel> getProfile() async {
+    hasError.value = false;
+    return ProfileService.getProfile()
+        .then((value) {
+      profileData.value = value;
+      return value;
+    })
+        .onError((error, stackTrace) {
+      hasError.value = true;
+      notificationHandler.apiErrorNotificationHandler(error: error);
+      throw Exception();
+    });
+  }
+
   late final List<HomeScreenTileModel> tiles = [
     HomeScreenTileModel(
       title: 'Events Today',

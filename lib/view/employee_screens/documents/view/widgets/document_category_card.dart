@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/view/employee_screens/documents/controller/controller.dart';
 
+import '../../service/model/document_category.dart';
+
 class DocumentCategoryCard extends StatelessWidget {
   const DocumentCategoryCard({
     super.key,

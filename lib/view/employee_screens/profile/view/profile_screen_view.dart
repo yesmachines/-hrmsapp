@@ -42,7 +42,7 @@ class ProfileScreenView extends GetView<ProfileController> {
                       profileData: controller.profileData.value!,
                     );
                   } else {
-                    return const NoDataPage();
+                    return NoDataPage();
                   }
                 },
               );

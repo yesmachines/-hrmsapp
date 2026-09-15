@@ -1,23 +1,15 @@
+
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/view/employee_screens/employee_personal_documents/service/service.dart';
 import 'package:yes_hrm/view/employee_screens/employee_personal_documents/view/widgets/upload_document_bottom_sheet.dart';
 
-enum PersonalDocStatus { approved, rejected, pendingApproval }
+import '../service/model/personal_document.dart';
+import '../service/model/personal_document_model.dart';
 
-class PersonalDocument {
-  const PersonalDocument({
-    required this.title,
-    required this.icon,
-    required this.status,
-    required this.details,
-  });
-
-  final String title;
-  final IconData icon;
-  final PersonalDocStatus status;
-  final Map<String, String> details;
-}
 
 class EmployeePersonalDocumentsController extends GetxController
     with Bindings {
@@ -28,62 +20,124 @@ class EmployeePersonalDocumentsController extends GetxController
   final RxString selectedMonth = 'Month'.obs;
   final RxString selectedDate = 'Date'.obs;
 
-  final RxList<PersonalDocument> documents = <PersonalDocument>[
-    PersonalDocument(
-      title: 'Passport',
-      icon: Icons.menu_book_outlined,
-      status: PersonalDocStatus.approved,
-      details: const {
-        'Passport No': 'A123456789',
-        'Issue Place': 'DUBAI',
-        'Issue Date': '13 JULY 2026',
-        'Expiry Date': '13 JAN 2026',
-      },
-    ),
-    PersonalDocument(
-      title: 'Emirates ID',
-      icon: Icons.badge_outlined,
-      status: PersonalDocStatus.approved,
-      details: const {
-        'EID No': '784-1990-1234567-1',
-        'Issue Date': '13 JULY 2026',
-        'Expiry Date': '13 JAN 2026',
-      },
-    ),
-    PersonalDocument(
-      title: 'Visa',
-      icon: Icons.airplane_ticket_outlined,
-      status: PersonalDocStatus.approved,
-      details: const {
-        'Visa Num': 'V987654321',
-        'UID No': 'UID-2024-00123',
-        'Issue date': '15 JUN 2026',
-        'Expiry Date': '13 JAN 2036',
-      },
-    ),
-    PersonalDocument(
-      title: 'Insurance',
-      icon: Icons.health_and_safety_outlined,
-      status: PersonalDocStatus.rejected,
-      details: const {
-        'Company': 'STAR LIFE',
-        'Number': 'INS-2024-7890',
-        'Issue date': '15 JUN 2026',
-        'Expiry Date': '13 JAN 2036',
-      },
-    ),
-    PersonalDocument(
-      title: 'Driving Licence',
-      icon: Icons.directions_car_outlined,
-      status: PersonalDocStatus.pendingApproval,
-      details: const {
-        'Company': 'STAR LIFE',
-        'Number': 'INS-2024-7890',
-        'Issue date': '15 JUN 2026',
-        'Expiry Date': '13 JAN 2036',
-      },
-    ),
-  ].obs;
+  Rxn<List<PersonalDocumentModel>> personalDocument = Rxn(null);
+  RxnBool hasError = RxnBool(false);
+
+  final RxList<PersonalDocument> documents = <PersonalDocument>[].obs;
+
+  Future<List<PersonalDocumentModel>> getPersonalDocument()async{
+    hasError.value = false;
+    return PersonalDocumentService.getPersonalDocument()
+        .then((value){
+          personalDocument.value = value;
+          documents.assignAll(
+            value.map(
+                  (personalDocument) => PersonalDocument(
+                title: personalDocument.documentName,
+                icon: getDocumentIcon(
+                  personalDocument.documentName,
+                ),
+                status: null,
+                details: {
+                  'Category': personalDocument.categoryName,
+                  'Document Code': personalDocument.documentCode,
+                },
+              ),
+            ),
+          );
+          return value;
+    })
+        .onError((error, stackTrace){
+      hasError.value = true;
+      notificationHandler.apiErrorNotificationHandler(error: error);
+      throw Exception();
+    });
+  }
+
+  IconData getDocumentIcon(String documentName) {
+    switch (documentName.toLowerCase()) {
+      case 'passport':
+        return Icons.menu_book_outlined;
+
+      case 'emirates id':
+        return Icons.badge_outlined;
+
+      case 'visa':
+        return Icons.airplane_ticket_outlined;
+
+      case 'insurance':
+        return Icons.health_and_safety_outlined;
+
+      case 'driving licence':
+        return Icons.directions_car_outlined;
+
+      case 'appraisal letter':
+        return Icons.description_outlined;
+
+      case 'appreciation letter':
+        return Icons.workspace_premium_outlined;
+
+      default:
+        return Icons.description_outlined;
+    }
+  }
+
+  // final RxList<PersonalDocument> documents = <PersonalDocument>[
+  //   PersonalDocument(
+  //     title: 'Passport',
+  //     icon: Icons.menu_book_outlined,
+  //     status: PersonalDocStatus.approved,
+  //     details: const {
+  //       'Passport No': 'A123456789',
+  //       'Issue Place': 'DUBAI',
+  //       'Issue Date': '13 JULY 2026',
+  //       'Expiry Date': '13 JAN 2026',
+  //     },
+  //   ),
+  //   PersonalDocument(
+  //     title: 'Emirates ID',
+  //     icon: Icons.badge_outlined,
+  //     status: PersonalDocStatus.approved,
+  //     details: const {
+  //       'EID No': '784-1990-1234567-1',
+  //       'Issue Date': '13 JULY 2026',
+  //       'Expiry Date': '13 JAN 2026',
+  //     },
+  //   ),
+  //   PersonalDocument(
+  //     title: 'Visa',
+  //     icon: Icons.airplane_ticket_outlined,
+  //     status: PersonalDocStatus.approved,
+  //     details: const {
+  //       'Visa Num': 'V987654321',
+  //       'UID No': 'UID-2024-00123',
+  //       'Issue date': '15 JUN 2026',
+  //       'Expiry Date': '13 JAN 2036',
+  //     },
+  //   ),
+  //   PersonalDocument(
+  //     title: 'Insurance',
+  //     icon: Icons.health_and_safety_outlined,
+  //     status: PersonalDocStatus.rejected,
+  //     details: const {
+  //       'Company': 'STAR LIFE',
+  //       'Number': 'INS-2024-7890',
+  //       'Issue date': '15 JUN 2026',
+  //       'Expiry Date': '13 JAN 2036',
+  //     },
+  //   ),
+  //   PersonalDocument(
+  //     title: 'Driving Licence',
+  //     icon: Icons.directions_car_outlined,
+  //     status: PersonalDocStatus.pendingApproval,
+  //     details: const {
+  //       'Company': 'STAR LIFE',
+  //       'Number': 'INS-2024-7890',
+  //       'Issue date': '15 JUN 2026',
+  //       'Expiry Date': '13 JAN 2036',
+  //     },
+  //   ),
+  // ].obs;
 
   List<PersonalDocument> get filteredDocuments {
     final query = searchQuery.value.trim().toLowerCase();
