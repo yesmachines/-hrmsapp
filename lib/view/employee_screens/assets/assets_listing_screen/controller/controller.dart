@@ -1,180 +1,191 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import 'package:yes_hrm/view/employee_screens/assets/assets_listing_screen/service/model/asset_model.dart';
+import 'package:yes_hrm/view/employee_screens/assets/assets_listing_screen/service/service.dart';
 
 class AssetsController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController assetsScrollController = ScrollController();
+  final ScrollController requestsScrollController = ScrollController();
   final RxString searchQuery = ''.obs;
   final Rx<AssetsTab> selectedTab = AssetsTab.assets.obs;
+  final Rxn<AssetStatus> selectedStatus = Rxn();
+  final Rxn<AssetRequestStatus> selectedRequestStatus = Rxn();
+  final Rxn<List<AssetModel>> assets = Rxn(null);
+  final Rxn<List<AssetRequestModel>> requests = Rxn(null);
 
-  final categories = const [
-    'Laptop',
-    'Mobile Devices',
-    'Headphone',
-    'Access Card',
-    'Monitor',
-  ];
+  int assetsPage = 1;
+  int assetsLastPage = 1;
+  int requestsPage = 1;
+  int requestsLastPage = 1;
+  int _assetsFetchId = 0;
+  int _requestsFetchId = 0;
+  final RxInt filterVersion = 0.obs;
+  final RxInt requestFilterVersion = 0.obs;
+  Timer? _searchDebounce;
 
-  late final List<AssetModel> assets = [
-    AssetModel(
-      id: '1',
-      name: 'Dell Latitude 5440',
-      series: 'Latitude Series',
-      assetId: 'AST-1024',
-      category: 'Laptop',
-      assignedDate: DateTime(2026, 8, 12),
-      condition: 'Excellent',
-      status: AssetStatus.active,
-      icon: Icons.laptop_mac_rounded,
-      history: const [
-        AssetHistoryItem(
-          title: 'Assigned',
-          subtitle: '12 Aug 2026 — Condition: Excellent',
-          isPrimary: true,
-        ),
-        AssetHistoryItem(
-          title: 'Returned',
-          subtitle: '05 Jan 2026 — Scheduled Handover',
-        ),
-        AssetHistoryItem(
-          title: 'Previous Assigned',
-          subtitle: '10 Sep 2025 — Condition: Good',
-          isPrimary: true,
-        ),
-      ],
-    ),
-    AssetModel(
-      id: '2',
-      name: 'iPhone 15',
-      series: 'Mobile Devices',
-      assetId: 'AST-1031',
-      category: 'Mobile Devices',
-      assignedDate: DateTime(2026, 8, 5),
-      condition: 'Good',
-      status: AssetStatus.active,
-      icon: Icons.smartphone_rounded,
-      history: const [
-        AssetHistoryItem(
-          title: 'Assigned',
-          subtitle: '05 Aug 2026 — Condition: Good',
-          isPrimary: true,
-        ),
-      ],
-    ),
-    AssetModel(
-      id: '3',
-      name: 'Marshall Major IV Wireless Bluetooth',
-      series: 'Headphone',
-      assetId: 'AST-1042',
-      category: 'Headphone',
-      assignedDate: DateTime(2026, 8, 5),
-      condition: 'Excellent',
-      status: AssetStatus.underMaintenance,
-      icon: Icons.headphones_rounded,
-      history: const [
-        AssetHistoryItem(
-          title: 'Under Maintenance',
-          subtitle: '05 Aug 2026 — Service requested',
-        ),
-        AssetHistoryItem(
-          title: 'Assigned',
-          subtitle: '01 Mar 2026 — Condition: Excellent',
-          isPrimary: true,
-        ),
-      ],
-    ),
-  ];
-
-  late final List<AssetRequestModel> requests = [
-    AssetRequestModel(
-      id: 'r1',
-      type: AssetRequestType.newAsset,
-      status: AssetRequestStatus.pending,
-      requestedItem: 'Laptop',
-      requestDate: DateTime(2026, 8, 12),
-      ticketId: 'REQ-3889',
-    ),
-    AssetRequestModel(
-      id: 'r2',
-      type: AssetRequestType.replacement,
-      status: AssetRequestStatus.approved,
-      requestedItem: 'Mobile Phone',
-      requestDate: DateTime(2026, 8, 5),
-      ticketId: 'REQ-3889',
-    ),
-    AssetRequestModel(
-      id: 'r3',
-      type: AssetRequestType.repairMaintenance,
-      status: AssetRequestStatus.completed,
-      requestedItem: 'Laptop',
-      requestDate: DateTime(2026, 8, 5),
-      ticketId: 'REQ-3889',
-    ),
-    AssetRequestModel(
-      id: 'r4',
-      type: AssetRequestType.reportLostDamaged,
-      status: AssetRequestStatus.rejected,
-      requestedItem: 'Access Card',
-      requestDate: DateTime(2026, 8, 1),
-      ticketId: 'REQ-3889',
-    ),
-  ];
-
-  List<AssetModel> get filteredAssets {
-    final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) return assets;
-    return assets
-        .where(
-          (asset) =>
-              asset.name.toLowerCase().contains(query) ||
-              asset.assetId.toLowerCase().contains(query) ||
-              asset.category.toLowerCase().contains(query) ||
-              asset.series.toLowerCase().contains(query),
-        )
-        .toList();
+  @override
+  void onInit() {
+    assetsScrollController.addListener(() {
+      if (assetsScrollController.position.extentAfter == 0 &&
+          assetsPage <= assetsLastPage &&
+          assetsPage != assetsLastPage) {
+        assetsPage++;
+        getAssets();
+      }
+    });
+    requestsScrollController.addListener(() {
+      if (requestsScrollController.position.extentAfter == 0 &&
+          requestsPage <= requestsLastPage &&
+          requestsPage != requestsLastPage) {
+        requestsPage++;
+        getAssetRequests();
+      }
+    });
+    super.onInit();
   }
 
-  List<AssetRequestModel> get filteredRequests {
-    final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) return requests;
-    return requests
-        .where(
-          (request) =>
-              request.type.label.toLowerCase().contains(query) ||
-              request.requestedItem.toLowerCase().contains(query) ||
-              request.ticketId.toLowerCase().contains(query),
-        )
-        .toList();
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), applyFilters);
   }
-
-  void onSearchChanged(String value) => searchQuery.value = value;
 
   void onTabChanged(AssetsTab tab) {
+    if (selectedTab.value == tab) return;
     selectedTab.value = tab;
-    searchController.clear();
-    searchQuery.value = '';
+  }
+
+  void applyFilters() {
+    if (selectedTab.value == AssetsTab.assets) {
+      onRefreshAssets();
+    } else {
+      onRefreshRequests();
+    }
   }
 
   void onFilterTap() {
-    notificationHandler.sendNotification(
-      message: 'Asset filters coming soon',
-      notificationType: .warning,
+    if (selectedTab.value == AssetsTab.assets) {
+      _openAssetStatusFilter();
+    } else {
+      _openRequestStatusFilter();
+    }
+  }
+
+  void _openAssetStatusFilter() {
+    customBottomSheet(
+      title: 'Status',
+      child: Column(
+        children: [
+          _statusOption(
+            label: 'All',
+            isSelected: selectedStatus.value == null,
+            onTap: () {
+              selectedStatus.value = null;
+              Get.back();
+              applyFilters();
+            },
+          ),
+          ...AssetStatus.values.map((status) {
+            return _statusOption(
+              label: status.label,
+              isSelected: selectedStatus.value == status,
+              onTap: () {
+                selectedStatus.value = status;
+                Get.back();
+                applyFilters();
+              },
+            );
+          }),
+        ],
+      ),
     );
   }
 
-  void onAddRequest() => Get.toNamed(appRoutes.createAssetRequest);
+  void _openRequestStatusFilter() {
+    customBottomSheet(
+      title: 'Status',
+      child: Column(
+        children: [
+          _statusOption(
+            label: 'All',
+            isSelected: selectedRequestStatus.value == null,
+            onTap: () {
+              selectedRequestStatus.value = null;
+              Get.back();
+              applyFilters();
+            },
+          ),
+          ...AssetRequestStatus.values.map((status) {
+            return _statusOption(
+              label: status.label,
+              isSelected: selectedRequestStatus.value == status,
+              onTap: () {
+                selectedRequestStatus.value = status;
+                Get.back();
+                applyFilters();
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusOption({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(appSize.radius12),
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: appSize.size8.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: appSize.size14.w,
+          vertical: appSize.size14.h,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? appColors.submittedBadgeBg
+              : appColors.scaffoldGreyColor,
+          borderRadius: BorderRadius.circular(appSize.radius12),
+          border: Border.all(
+            color: isSelected
+                ? appColors.brandColor.withValues(alpha: 0.35)
+                : appColors.strokeColor,
+          ),
+        ),
+        child: Text(
+          label,
+          style: fontStyles.font14Black600.copyWith(
+            color: isSelected ? appColors.brandColor : appColors.blackColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onAddRequest() {
+    Get.toNamed(appRoutes.createAssetRequest)?.then((value) {
+      if (value == true) onRefreshRequests();
+    });
+  }
 
   void onViewAsset(AssetModel asset) {
     Get.toNamed(appRoutes.assetDetails, arguments: asset);
   }
 
   void onViewRequest(AssetRequestModel request) {
-    notificationHandler.sendNotification(
-      message: '${request.type.label} details coming soon',
-      notificationType: .warning,
-    );
+    Get.toNamed(appRoutes.assetRequestDetails, arguments: request.id);
   }
 
   String formatDate(DateTime date) => DateFormat('dd MMM yyyy').format(date);
@@ -227,9 +238,80 @@ class AssetsController extends GetxController with Bindings {
     }
   }
 
+  Future<void> onRefreshAssets() async {
+    assetsPage = 1;
+    assetsLastPage = 1;
+    assets.value = null;
+    filterVersion.value++;
+  }
+
+  Future<void> onRefreshRequests() async {
+    requestsPage = 1;
+    requestsLastPage = 1;
+    requests.value = null;
+    requestFilterVersion.value++;
+  }
+
+  Future<List<AssetModel>> getAssets() async {
+    final fetchId = ++_assetsFetchId;
+    return AssetsService.getAssets(
+          page: assetsPage,
+          search: searchQuery.value,
+          status: selectedStatus.value,
+        )
+        .then((value) {
+          if (fetchId != _assetsFetchId) return value.assets;
+          assetsPage = value.pagination.currentPage;
+          assetsLastPage = value.pagination.lastPage;
+          if (assets.value == null) {
+            assets.value = value.assets;
+          } else {
+            assets.value = [...assets.value!, ...value.assets];
+          }
+          return value.assets;
+        })
+        .onError((error, stackTrace) {
+          if (fetchId != _assetsFetchId) throw Exception("");
+          if (assets.value == null) {
+            assets.value = [];
+          }
+          throw Exception("");
+        });
+  }
+
+  Future<List<AssetRequestModel>> getAssetRequests() async {
+    final fetchId = ++_requestsFetchId;
+    return AssetsService.getAssetRequests(
+          page: requestsPage,
+          search: searchQuery.value,
+          status: selectedRequestStatus.value,
+        )
+        .then((value) {
+          if (fetchId != _requestsFetchId) return value.requests;
+          requestsPage = value.pagination.currentPage;
+          requestsLastPage = value.pagination.lastPage;
+          if (requests.value == null) {
+            requests.value = value.requests;
+          } else {
+            requests.value = [...requests.value!, ...value.requests];
+          }
+          return value.requests;
+        })
+        .onError((error, stackTrace) {
+          if (fetchId != _requestsFetchId) throw Exception("");
+          if (requests.value == null) {
+            requests.value = [];
+          }
+          throw Exception("");
+        });
+  }
+
   @override
   void onClose() {
+    _searchDebounce?.cancel();
     searchController.dispose();
+    assetsScrollController.dispose();
+    requestsScrollController.dispose();
     super.onClose();
   }
 

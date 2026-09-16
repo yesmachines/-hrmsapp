@@ -7,6 +7,8 @@ import '../../view/common_screen/splash_screen/controller/controller.dart';
 import '../../view/common_screen/splash_screen/view/splash_screen_view.dart';
 import '../../view/employee_screens/assets/asset_details_screen/controller/controller.dart';
 import '../../view/employee_screens/assets/asset_details_screen/view/asset_details_view.dart';
+import '../../view/employee_screens/assets/asset_request_details_screen/controller/controller.dart';
+import '../../view/employee_screens/assets/asset_request_details_screen/view/asset_request_details_view.dart';
 import '../../view/employee_screens/assets/assets_listing_screen/controller/controller.dart';
 import '../../view/employee_screens/assets/assets_listing_screen/view/assets_view.dart';
 import '../../view/employee_screens/assets/create_asset_request_screen/controller/controller.dart';
@@ -22,6 +24,8 @@ import '../../view/employee_screens/emergency_contact/controller/controller.dart
 import '../../view/employee_screens/emergency_contact/view/emergency_contact_view.dart';
 import '../../view/employee_screens/employee_details_screen/controller/controller.dart';
 import '../../view/employee_screens/employee_details_screen/view/employee_details_view.dart';
+import '../../view/employee_screens/organization_chart_screen/controller/controller.dart';
+import '../../view/employee_screens/organization_chart_screen/view/organization_chart_view.dart';
 import '../../view/employee_screens/employee_directory/controller/controller.dart';
 import '../../view/employee_screens/employee_directory/view/employee_directory_view.dart';
 import '../../view/employee_screens/employee_documents/controller/controller.dart';
@@ -91,12 +95,14 @@ class AppRoutes {
   String leaveView = "/leaveView";
   String employeeDirectory = "/employeeDirectory";
   String employeeDetails = "/employeeDetails";
+  String organizationChart = "/organizationChart";
   String visits = "/visits";
   String requestVisit = "/requestVisit";
   String visitDetails = "/visitDetails";
   String assets = "/assets";
   String createAssetRequest = "/createAssetRequest";
   String assetDetails = "/assetDetails";
+  String assetRequestDetails = "/assetRequestDetails";
   String news = "/news";
   String newsDetails = "/newsDetails";
   String helpDesk = "/helpDesk";
@@ -213,6 +219,11 @@ List<GetPage<dynamic>> routes = [
     binding: EmployeeDetailsController(),
   ),
   GetPage(
+    name: appRoutes.organizationChart,
+    page: () => const OrganizationChartView(),
+    binding: OrganizationChartController(),
+  ),
+  GetPage(
     name: appRoutes.visits,
     page: () => const VisitsView(),
     binding: VisitsController(),
@@ -241,6 +252,11 @@ List<GetPage<dynamic>> routes = [
     name: appRoutes.assetDetails,
     page: () => const AssetDetailsView(),
     binding: AssetDetailsController(),
+  ),
+  GetPage(
+    name: appRoutes.assetRequestDetails,
+    page: () => const AssetRequestDetailsView(),
+    binding: AssetRequestDetailsController(),
   ),
   GetPage(
     name: appRoutes.news,

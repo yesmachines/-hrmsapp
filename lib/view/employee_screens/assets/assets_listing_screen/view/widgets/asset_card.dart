@@ -47,13 +47,15 @@ class AssetCard extends GetView<AssetsController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(asset.name, style: fontStyles.font14Black600),
-                    SizedBox(height: 2.h),
-                    Text(
-                      asset.series,
-                      style: fontStyles.font12LightGrey500.copyWith(
-                        letterSpacing: 0,
+                    if (asset.series.isNotEmpty) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        asset.series,
+                        style: fontStyles.font12LightGrey500.copyWith(
+                          letterSpacing: 0,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

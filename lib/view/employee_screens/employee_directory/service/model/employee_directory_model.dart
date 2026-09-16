@@ -13,6 +13,8 @@ class EmployeeDirectoryModel {
     this.status = 'Active',
     this.officeLocation = '',
     this.joinDate = '',
+    this.topLevel = const [],
+    this.lowLevel = const [],
   });
 
   final String id;
@@ -25,28 +27,40 @@ class EmployeeDirectoryModel {
   final String status;
   final String officeLocation;
   final String joinDate;
+  final List<EmployeeDirectoryModel> topLevel;
+  final List<EmployeeDirectoryModel> lowLevel;
 
   String get departmentShort =>
       department.replaceAll(' Department', '').trim();
 
   bool get isActive => status.toLowerCase() == 'active';
 
-  factory EmployeeDirectoryModel.fromJson(Map json) {
+  factory EmployeeDirectoryModel.fromJson(
+    Map json, {
+    bool parseHierarchy = true,
+  }) {
     final department = json["department"];
+    final user = json["user"];
     final joinDate = json["join_date"] ??
         json["joining_date"] ??
         json["date_of_joining"] ??
         json["joined_at"];
     return EmployeeDirectoryModel(
       id: (json["id"] ?? "").toString(),
-      name: _string(json["name"] ?? json["full_name"]),
+      name: _string(
+        json["name"] ??
+            json["full_name"] ??
+            (user is Map ? user["name"] : null),
+      ),
       designation: _string(
         json["designation"] ?? json["job_title"] ?? json["role"],
       ),
       department: department is Map
           ? _string(department["name"] ?? department["title"])
           : _string(json["department_name"] ?? department),
-      email: _string(json["email"]),
+      email: _email(
+        json["email"] ?? (user is Map ? user["email"] : null),
+      ),
       phone: _string(
         json["phone"] ??
             json["mobile"] ??
@@ -56,7 +70,9 @@ class EmployeeDirectoryModel {
       avatarUrl: _mediaUrl(
         json["image_url"] ?? json["avatar"] ?? json["photo"] ?? json["image"],
       ),
-      status: _status(json["status"] ?? json["employee_status"]),
+      status: _status(
+        json["status"] ?? json["employee_status"] ?? json["employment_status"],
+      ),
       officeLocation: _string(
         json["office_location"] ??
             json["location"] ??
@@ -64,6 +80,8 @@ class EmployeeDirectoryModel {
             json["office"],
       ),
       joinDate: _joinDate(joinDate),
+      topLevel: parseHierarchy ? _people(json["top_level"]) : const [],
+      lowLevel: parseHierarchy ? _people(json["low_level"]) : const [],
     );
   }
 }
@@ -74,9 +92,28 @@ String _string(dynamic value) {
 }
 
 String _status(dynamic value) {
+  if (value == 1 || value == true || value == '1') return 'Active';
+  if (value == 0 || value == false || value == '0') return 'Inactive';
   final status = _string(value);
   if (status.isEmpty) return 'Active';
   return status[0].toUpperCase() + status.substring(1);
+}
+
+String _email(dynamic value) {
+  final raw = _string(value);
+  if (raw.isEmpty) return '';
+  final markdown = RegExp(r'\[([^\]]+)\]\(mailto:[^)]+\)').firstMatch(raw);
+  if (markdown != null) return markdown.group(1) ?? raw;
+  return raw.replaceFirst(RegExp(r'^mailto:'), '');
+}
+
+List<EmployeeDirectoryModel> _people(dynamic json) {
+  if (json is! List) return const [];
+  return List.unmodifiable(
+    json.whereType<Map>().map(
+      (item) => EmployeeDirectoryModel.fromJson(item, parseHierarchy: false),
+    ),
+  );
 }
 
 String _joinDate(dynamic value) {

@@ -5,6 +5,7 @@ import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
 import 'package:yes_hrm/utils/buttons/custom_button.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
+import 'package:yes_hrm/view/employee_screens/assets/assets_listing_screen/service/model/asset_model.dart';
 import 'package:yes_hrm/view/employee_screens/assets/create_asset_request_screen/controller/controller.dart';
 
 class CreateAssetRequestView extends GetView<CreateAssetRequestController> {
@@ -51,25 +52,61 @@ class CreateAssetRequestView extends GetView<CreateAssetRequestController> {
                 SizedBox(height: appSize.size8.h),
                 Obx(
                   () => _DropdownField(
-                    value: controller.selectedRequestType.value,
+                    value: controller.selectedRequestType.value.label,
                     onTap: controller.onRequestTypeTap,
                   ),
                 ),
                 SizedBox(height: appSize.size16.h),
-                Text('Asset Category', style: fontStyles.font12LightGrey500),
+                Obx(() {
+                  if (controller.isNewAsset) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Asset Category',
+                          style: fontStyles.font12LightGrey500,
+                        ),
+                        SizedBox(height: appSize.size8.h),
+                        _DropdownField(
+                          value: controller.selectedCategory.value?.name ??
+                              'Select category',
+                          isPlaceholder:
+                              controller.selectedCategory.value == null,
+                          onTap: controller.onCategoryTap,
+                        ),
+                      ],
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Asset', style: fontStyles.font12LightGrey500),
+                      SizedBox(height: appSize.size8.h),
+                      _DropdownField(
+                        value: controller.selectedAsset.value == null
+                            ? 'Select asset'
+                            : controller.assetLabel(
+                                controller.selectedAsset.value!,
+                              ),
+                        isPlaceholder: controller.selectedAsset.value == null,
+                        onTap: controller.onAssetTap,
+                      ),
+                    ],
+                  );
+                }),
+                SizedBox(height: appSize.size16.h),
+                Text('Priority', style: fontStyles.font12LightGrey500),
                 SizedBox(height: appSize.size8.h),
                 Obx(
                   () => _DropdownField(
-                    value: controller.selectedCategory.value ??
-                        'Select category',
-                    isPlaceholder: controller.selectedCategory.value == null,
-                    onTap: controller.onCategoryTap,
+                    value: controller.selectedPriority.value.label,
+                    onTap: controller.onPriorityTap,
                   ),
                 ),
                 SizedBox(height: appSize.size16.h),
                 CustomTextField(
-                  title: 'Reason / Description',
-                  controller: controller.reasonController,
+                  title: 'Description',
+                  controller: controller.descriptionController,
                   hintText: 'Provide detailed reasons for your request...',
                   radius: appSize.radius12,
                   minLines: 5,

@@ -9,4 +9,8 @@ class ApiRoutes {
   String leaves = "$_baseUrl/leaves";
   String employees = "$_baseUrl/employees";
   String visits = "$_baseUrl/visits";
+  String assets = "$_baseUrl/assets";
+  String assetRequests = "$_baseUrl/assets/requests";
+  String assetCategories = "$_baseUrl/assets/categories";
+  String assetMyAssigned = "$_baseUrl/assets/my-assigned";
 }
