@@ -12,4 +12,5 @@ class ApiRoutes {
   String profile = "$_baseUrl/me";
   String documents = "$_baseUrl/documents/categories";
   String documentsType = "$_baseUrl/documents/types";
+  String hrDocuments = "$_baseUrl/documents/policies";
 }

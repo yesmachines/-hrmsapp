@@ -5,6 +5,8 @@ import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/buttons/custom_button.dart';
 import 'package:yes_hrm/view/employee_screens/hr_documents/controller/controller.dart';
 
+import '../../service/model/hr_document.dart';
+
 class HrDocumentCard extends GetView<HrDocumentsController> {
   const HrDocumentCard({super.key, required this.document});
 

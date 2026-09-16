@@ -6,6 +6,7 @@ import 'package:yes_hrm/utils/image_handler/image_handler.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
 import 'package:yes_hrm/view/employee_screens/employee_personal_documents/view/widgets/document_filter_chip.dart';
 
+import '../../employee_personal_documents/view/widgets/personal_document_loading_screen.dart';
 import '../controller/controller.dart';
 import 'widgets/hr_document_card.dart';
 
@@ -95,30 +96,51 @@ class HrDocumentsView extends GetView<HrDocumentsController> {
             ),
             SizedBox(height: appSize.size16.h),
             Expanded(
-              child: Obx(() {
-                final docs = controller.filteredDocuments;
-                if (docs.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No documents found',
-                      style: fontStyles.font14LightGrey400,
-                    ),
-                  );
-                }
-                return ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    appSize.size16.w,
-                    0,
-                    appSize.size16.w,
-                    appSize.size24.h,
-                  ),
-                  itemCount: docs.length,
-                  separatorBuilder: (_, _) => SizedBox(height: appSize.size12.h),
-                  itemBuilder: (context, index) {
-                    return HrDocumentCard(document: docs[index]);
-                  },
-                );
-              }),
+              child: Obx(() =>
+                FutureBuilder(
+                  future: controller.hrDocuments.value == null
+                    ? controller.getHrDocument()
+                    : null,
+                  builder: (context, snapshot) {
+                    if (controller.hrDocuments.value == null &&
+                        controller.hasError.value == false) {
+                      return const PersonalDocumentLoadingWidget();
+                    } else if (controller.hrDocuments.value != null &&
+                        controller.hrDocuments.value!.isNotEmpty) {
+                      final docs = controller.filteredDocuments;
+                      if (docs.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No documents found',
+                            style: fontStyles.font14LightGrey400,
+                          ),
+                        );
+                      }
+                      return ListView.separated(
+                        padding: EdgeInsets.fromLTRB(
+                          appSize.size16.w,
+                          0,
+                          appSize.size16.w,
+                          appSize.size24.h,
+                        ),
+                        itemCount: docs.length,
+                        separatorBuilder: (_, _) =>
+                            SizedBox(height: appSize.size12.h),
+                        itemBuilder: (context, index) {
+                          return HrDocumentCard(document: docs[index]);
+                        },
+                      );
+                    } else{
+                      return Center(
+                        child: Text(
+                          'No documents found',
+                          style: fontStyles.font14LightGrey400,
+                        ),
+                      );
+                    }
+                  }
+                )
+              ),
             ),
           ],
         ),

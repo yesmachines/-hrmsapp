@@ -104,39 +104,6 @@ class EmployeePersonalDocumentsController extends GetxController
   //       'Expiry Date': '13 JAN 2026',
   //     },
   //   ),
-  //   PersonalDocument(
-  //     title: 'Visa',
-  //     icon: Icons.airplane_ticket_outlined,
-  //     status: PersonalDocStatus.approved,
-  //     details: const {
-  //       'Visa Num': 'V987654321',
-  //       'UID No': 'UID-2024-00123',
-  //       'Issue date': '15 JUN 2026',
-  //       'Expiry Date': '13 JAN 2036',
-  //     },
-  //   ),
-  //   PersonalDocument(
-  //     title: 'Insurance',
-  //     icon: Icons.health_and_safety_outlined,
-  //     status: PersonalDocStatus.rejected,
-  //     details: const {
-  //       'Company': 'STAR LIFE',
-  //       'Number': 'INS-2024-7890',
-  //       'Issue date': '15 JUN 2026',
-  //       'Expiry Date': '13 JAN 2036',
-  //     },
-  //   ),
-  //   PersonalDocument(
-  //     title: 'Driving Licence',
-  //     icon: Icons.directions_car_outlined,
-  //     status: PersonalDocStatus.pendingApproval,
-  //     details: const {
-  //       'Company': 'STAR LIFE',
-  //       'Number': 'INS-2024-7890',
-  //       'Issue date': '15 JUN 2026',
-  //       'Expiry Date': '13 JAN 2036',
-  //     },
-  //   ),
   // ].obs;
 
   List<PersonalDocument> get filteredDocuments {

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/image_handler/image_handler.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
+import 'package:yes_hrm/view/employee_screens/employee_personal_documents/view/widgets/personal_document_loading_screen.dart';
 
 import '../../profile/view/widgets/profile_loading_widget.dart';
 import '../controller/controller.dart';
@@ -114,7 +115,7 @@ class EmployeePersonalDocumentsView
                     builder: (context, snapshot) {
                       if (controller.personalDocument.value == null &&
                           controller.hasError.value == false) {
-                        return const ProfileLoadingWidget();
+                        return const PersonalDocumentLoadingWidget();
                       } else if (controller.personalDocument.value != null &&
                           controller.personalDocument.value!.isNotEmpty) {
                         final docs = controller.filteredDocuments;

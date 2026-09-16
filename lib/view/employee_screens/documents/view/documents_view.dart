@@ -7,7 +7,7 @@ import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
 import 'package:yes_hrm/view/employee_screens/dashboard/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/documents/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/documents/view/widgets/document_category_card.dart';
-import 'package:yes_hrm/view/employee_screens/profile/view/widgets/profile_loading_widget.dart';
+import 'package:yes_hrm/view/employee_screens/documents/view/widgets/document_loading_screen.dart';
 
 class DocumentsView extends GetView<DocumentsController> {
   const DocumentsView({super.key});
@@ -84,7 +84,7 @@ class DocumentsView extends GetView<DocumentsController> {
                 builder: (context, snapshot) {
                   if (controller.documentsList.value == null &&
                       controller.hasError.value == false) {
-                    return const ProfileLoadingWidget();
+                    return const DocumentLoadingWidget();
                   } else if (controller.documentsList.value != null &&
                       controller.documentsList.value!.isNotEmpty) {
 
