@@ -4,26 +4,28 @@ import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
 import 'package:yes_hrm/utils/middleware/api_call_handler/api_call_handler.dart';
 import 'package:yes_hrm/view/authentication/login_screen/service/service.dart';
+import 'package:yes_hrm/view/employee_screens/profile/service/model/profile_model.dart';
 
-class ProfileMenuItem {
-  const ProfileMenuItem({
-    required this.title,
-    required this.icon,
-    required this.iconColor,
-    required this.backgroundColor,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color iconColor;
-  final Color backgroundColor;
-}
+import '../service/model/Profile_Menu_item.dart';
+import '../service/service.dart';
 
 class ProfileController extends GetxController with Bindings {
-  final RxString name = 'Safwan V'.obs;
-  final RxString jobTitle = 'Senior Flutter Developer'.obs;
-  final RxString department = 'Information Technology'.obs;
-  final RxString avatarUrl = ''.obs;
+  Rxn<ProfileModel> profileData = Rxn(null);
+  RxBool hasError = RxBool(false);
+
+  Future<ProfileModel> getProfile() async {
+    hasError.value = false;
+    return ProfileService.getProfile()
+        .then((value) {
+      profileData.value = value;
+      return value;
+    })
+        .onError((error, stackTrace) {
+      hasError.value = true;
+      notificationHandler.apiErrorNotificationHandler(error: error);
+      throw Exception();
+    });
+  }
 
   late final List<ProfileMenuItem> menuItems = [
     ProfileMenuItem(

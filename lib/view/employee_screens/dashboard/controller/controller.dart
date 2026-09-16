@@ -8,8 +8,8 @@ import '../../profile/controller/controller.dart';
 
 class EmployeeDashboardController extends GetxController with Bindings {
   final RxInt selectedNavIndex = 0.obs;
-  final RxString employeeName = 'Safwan'.obs;
-  final RxString dateLabel = 'TUESDAY, MAY 21, 2024'.obs;
+  // final RxString employeeName = 'Safwan'.obs;
+  // final RxString dateLabel = 'TUESDAY, MAY 21, 2024'.obs;
 
 
   void onNavTap(int index) {

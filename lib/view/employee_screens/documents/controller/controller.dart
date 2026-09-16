@@ -1,66 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/view/employee_screens/documents/service/model/documents_module.dart';
+import 'package:yes_hrm/view/employee_screens/documents/service/service.dart';
 
-class DocumentCategory {
-  const DocumentCategory({
-    required this.title,
-    required this.items,
-    required this.count,
-    required this.accentColor,
-  });
-
-  final String title;
-  final List<String> items;
-  final int count;
-  final Color accentColor;
-}
+import '../service/model/document_category.dart';
 
 class DocumentsController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final RxString searchQuery = ''.obs;
 
-  late final List<DocumentCategory> categories = [
-    DocumentCategory(
-      title: 'Employee Personal Documents',
-      items: const [
-        'Passport',
-        'Visa',
-        'Insurance',
-        'Driving Licence',
-        'Emirates ID',
-      ],
-      count: 5,
-      accentColor: appColors.brandColor,
-    ),
-    DocumentCategory(
-      title: 'Employment Documents',
-      items: const [
-        'Offer Letter',
-        'Employment Contracts',
-        'Confirmation Letter',
-        'Labour Card',
-      ],
-      count: 4,
-      accentColor: appColors.profileIconPurple,
-    ),
-    DocumentCategory(
-      title: 'HR Documents',
-      items: const ['HR Policy', 'Leave Policy', 'WFH Policy'],
-      count: 3,
-      accentColor: appColors.profileIconTeal,
-    ),
-    DocumentCategory(
-      title: 'Letter Requests',
-      items: const [
-        'Salary Certificate',
-        'Experience Letter',
-        'NOC',
-      ],
-      count: 2,
-      accentColor: appColors.orangeColor,
-    ),
-  ];
+  Rxn<List<DocumentsModule>> documentsList = Rxn(null);
+  RxnBool hasError = RxnBool(false);
+
+  final RxList<DocumentCategory> categories = <DocumentCategory>[].obs;
+
+  Future<List<DocumentsModule>> getDocuments() async{
+    hasError.value = false;
+    return DocumentService.getDocuments()
+        .then((value){
+          documentsList.value = value;
+
+          categories.assignAll(
+            value.map(
+                  (document) => DocumentCategory(
+                title: document.categoryName,
+                items: document.subcategories,
+                count: int.tryParse(document.badgeText) ?? 0,
+                accentColor: getCategoryColor(document.categoryName),
+              ),
+            ),
+          );
+          return value;
+    })
+        .onError((error, stackTrace){
+          hasError.value = true;
+          notificationHandler.apiErrorNotificationHandler(error: error);
+          throw Exception();
+    });
+  }
+
+  Color getCategoryColor(String categoryName) {
+    switch (categoryName) {
+      case 'Employee Personal Documents':
+        return appColors.brandColor;
+
+      case 'Employment Documents':
+        return appColors.profileIconPurple;
+
+      case 'HR Documents':
+        return appColors.profileIconTeal;
+
+      case 'Letter Requests':
+        return appColors.orangeColor;
+
+      default:
+        return appColors.brandColor;
+    }
+  }
 
   List<DocumentCategory> get filteredCategories {
     final query = searchQuery.value.trim().toLowerCase();

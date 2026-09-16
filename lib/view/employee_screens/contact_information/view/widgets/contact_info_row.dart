@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:yes_hrm/main.dart';
 
 import '../../controller/controller.dart';
+import '../../service/model/contact_info_field.dart';
 
 class ContactInfoRow extends StatelessWidget {
   const ContactInfoRow({

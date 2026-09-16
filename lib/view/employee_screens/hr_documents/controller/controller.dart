@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
+import 'package:yes_hrm/view/employee_screens/hr_documents/service/model/hr_document_model.dart';
+import 'package:yes_hrm/view/employee_screens/hr_documents/service/service.dart';
 
-class HrDocument {
-  const HrDocument({
-    required this.title,
-    required this.version,
-    required this.updatedDate,
-    required this.iconColor,
-    required this.iconBg,
-  });
-
-  final String title;
-  final String version;
-  final String updatedDate;
-  final Color iconColor;
-  final Color iconBg;
-}
+import '../service/model/hr_document.dart';
 
 class HrDocumentsController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();
@@ -26,29 +14,83 @@ class HrDocumentsController extends GetxController with Bindings {
   final RxString selectedMonth = 'Month'.obs;
   final RxString selectedDate = 'Date'.obs;
 
-  late final List<HrDocument> documents = [
-    HrDocument(
-      title: 'HR Policy 2026',
-      version: 'Version 1.0',
-      updatedDate: '15 Jan 2026',
-      iconColor: appColors.brandColor,
-      iconBg: appColors.profileIconBlueBg,
-    ),
-    HrDocument(
-      title: 'Leave Policy 2026',
-      version: 'Version 1.0',
-      updatedDate: '27 Jan 2026',
-      iconColor: appColors.profileIconGreen,
-      iconBg: appColors.profileIconGreenBg,
-    ),
-    HrDocument(
-      title: 'WFH Policy 2026',
-      version: 'Version 1.0',
-      updatedDate: '31 Jan 2026',
-      iconColor: appColors.orangeColor,
-      iconBg: appColors.profileIconOrangeBg,
-    ),
-  ];
+  Rxn<List<HrDocumentModel>> hrDocuments = Rxn(null);
+  RxnBool hasError = RxnBool(false);
+
+  final RxList<HrDocument> documents = <HrDocument>[].obs;
+
+  Future<List<HrDocumentModel>> getHrDocument()async{
+    hasError.value = false;
+    return HrDocumentService.getHrDocument()
+        .then((value){
+          hrDocuments.value = value;
+          documents.assignAll(
+            value.map(
+                (hrDocuments) => HrDocument(
+                    title: hrDocuments.policyName,
+                    version: hrDocuments.version,
+                    updatedDate: hrDocuments.updated,
+                  iconColor: getDocumentIconColor(hrDocuments.documentCode),
+                  iconBg: getDocumentIconBg(hrDocuments.documentCode),
+                )
+            )
+          );
+          return value;
+    })
+        .onError((error, stackTrace){
+      hasError.value = true;
+      notificationHandler.apiErrorNotificationHandler(error: error);
+      throw Exception();
+    });
+  }
+  IconData getDocumentIcon(String documentCode) {
+    switch (documentCode.toLowerCase().trim()) {
+      case 'hr_policy':
+        return Icons.business_center_outlined;
+
+      case 'leave_policy':
+        return Icons.event_available_outlined;
+
+      case 'wfh_policy':
+        return Icons.home_work_outlined;
+
+      default:
+        return Icons.description_outlined;
+    }
+  }
+
+  Color getDocumentIconColor(String documentCode) {
+    switch (documentCode.toLowerCase().trim()) {
+      case 'hr_policy':
+        return appColors.brandColor;
+
+      case 'leave_policy':
+        return appColors.profileIconGreen;
+
+      case 'wfh_policy':
+        return appColors.orangeColor;
+
+      default:
+        return appColors.brandColor;
+    }
+  }
+
+  Color getDocumentIconBg(String documentCode) {
+    switch (documentCode.toLowerCase().trim()) {
+      case 'hr_policy':
+        return appColors.profileIconBlueBg;
+
+      case 'leave_policy':
+        return appColors.profileIconGreenBg;
+
+      case 'wfh_policy':
+        return appColors.profileIconOrangeBg;
+
+      default:
+        return appColors.profileIconBlueBg;
+    }
+  }
+
 
   List<HrDocument> get filteredDocuments {
     final query = searchQuery.value.trim().toLowerCase();

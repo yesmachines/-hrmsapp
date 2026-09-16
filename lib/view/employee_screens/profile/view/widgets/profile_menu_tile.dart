@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/view/employee_screens/profile/controller/controller.dart';
 
+import '../../service/model/Profile_Menu_item.dart';
+
 class ProfileMenuTile extends StatelessWidget {
   const ProfileMenuTile({
     super.key,

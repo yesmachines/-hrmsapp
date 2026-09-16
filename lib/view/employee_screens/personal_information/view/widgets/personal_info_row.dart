@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:yes_hrm/main.dart';
 
 import '../../controller/controller.dart';
+import '../../service/modal/personal_info_field.dart';
 
 class PersonalInfoRow extends StatelessWidget {
   const PersonalInfoRow({

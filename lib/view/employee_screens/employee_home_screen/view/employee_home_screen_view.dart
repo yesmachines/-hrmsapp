@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 
 import '../../../../main.dart';
+import '../../profile/view/widgets/profile_loading_widget.dart';
 import '../controller/controller.dart';
 import 'widget/check_in_out_row.dart';
 import 'widget/home_screen_header.dart';
@@ -26,7 +28,24 @@ class EmployeeHomeScreenView extends GetView<HomeScreenController> {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              const HomeScreenHeader(),
+              Obx(
+                () => FutureBuilder(
+                  future: controller.profileData.value == null
+                      ? controller.getProfile()
+                      : null,
+                  builder: (context, snapshot) {
+                    if (controller.profileData.value == null &&
+                        !controller.hasError.value) {
+                      return const ProfileLoadingWidget();
+                    } else if (controller.profileData.value != null) {
+                      return HomeScreenHeader(
+                        profile: controller.profileData.value!,);
+                    } else {
+                      return NoDataPage();
+                    }
+                  }
+                ),
+              ),
               SizedBox(height: appSize.size20.h),
               const TravelCard(),
               SizedBox(height: appSize.size16.h),
@@ -43,11 +62,13 @@ class EmployeeHomeScreenView extends GetView<HomeScreenController> {
                     runSpacing: spacing,
                     children: controller.tiles
                         .map(
-                          (tile) => SizedBox(
-                            width: tileWidth,
-                            child: HomeScreenTile(
-                              data: tile,
-                              onTap: () => controller.onTileTap(tile),
+                          (tile) => IntrinsicHeight(
+                            child: SizedBox(
+                              width: tileWidth,
+                              child: HomeScreenTile(
+                                data: tile,
+                                onTap: () => controller.onTileTap(tile),
+                              ),
                             ),
                           ),
                         )
