@@ -12,9 +12,9 @@ class ApiRoutes {
   String employees = "$_baseUrl/employees";
   String visits = "$_baseUrl/visits";
   String assets = "$_baseUrl/assets";
-  String assetRequests = "${apiRoutes.assets}/requests";
-  String assetCategories = "${apiRoutes.assets}/categories";
-  String assetMyAssigned = "${apiRoutes.assets}/my-assigned";
+  String assetRequests = "$_baseUrl/assets/requests";
+  String assetCategories = "$_baseUrl/assets/categories";
+  String assetMyAssigned = "$_baseUrl/assets/my-assigned";
   String profile = "$_baseUrl/me";
   String documents = "$_baseUrl/documents/categories";
   String documentsType = "$_baseUrl/documents/types";
