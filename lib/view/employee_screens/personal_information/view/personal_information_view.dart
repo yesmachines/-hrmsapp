@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
-import 'package:yes_hrm/utils/buttons/custom_button.dart';
 import 'package:yes_hrm/utils/image_handler/image_handler.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/view/employee_screens/personal_information/view/widgets/info_card.dart';
@@ -10,7 +9,6 @@ import 'package:yes_hrm/view/employee_screens/personal_information/view/widgets/
 
 import '../../profile/view/widgets/profile_loading_widget.dart';
 import '../controller/controller.dart';
-import 'widgets/personal_info_row.dart';
 
 class PersonalInformationView extends GetView<PersonalInformationController> {
   const PersonalInformationView({super.key});
@@ -61,21 +59,6 @@ class PersonalInformationView extends GetView<PersonalInformationController> {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                appSize.size16.w,
-                appSize.size8.h,
-                appSize.size16.w,
-                appSize.size16.h,
-              ),
-              child: CustomButton(
-                buttonName: 'Save Changes',
-                onPressed: controller.saveChanges,
-                buttonWidth: double.infinity,
-                radius: appSize.radius12,
-                padding: EdgeInsets.symmetric(vertical: appSize.size16.h),
-              ),
-            ),
           ],
         ),
       ),
@@ -83,7 +66,7 @@ class PersonalInformationView extends GetView<PersonalInformationController> {
   }
 }
 
-class _PersonalInfoAppBar extends GetView<PersonalInformationController> {
+class _PersonalInfoAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -117,27 +100,7 @@ class _PersonalInfoAppBar extends GetView<PersonalInformationController> {
               style: fontStyles.font16Black700,
             ),
           ),
-          Obx(
-            () => InkWell(
-              onTap: controller.toggleEdit,
-              borderRadius: BorderRadius.circular(appSize.radius8),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: appSize.size14.w,
-                  vertical: appSize.size8.h,
-                ),
-                decoration: BoxDecoration(
-                  color: appColors.profileIconBlueBg,
-                  borderRadius: BorderRadius.circular(appSize.radius8),
-                ),
-                child: Text(
-                  controller.isEditing.value ? 'Cancel' : 'Edit',
-                  style: fontStyles.font12Brand600,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: appSize.size8.w),
+          SizedBox(width: appSize.size44.w, height: appSize.size44.w),
         ],
       ),
     );

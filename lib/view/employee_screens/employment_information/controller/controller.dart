@@ -16,8 +16,6 @@ class EmploymentInfoField {
 }
 
 class EmploymentInformationController extends GetxController with Bindings {
-  final RxBool isEditing = false.obs;
-
   final RxList<EmploymentInfoField> fields = <EmploymentInfoField>[
     const EmploymentInfoField(
       label: 'COMPANY BELONGS',
@@ -56,14 +54,6 @@ class EmploymentInformationController extends GetxController with Bindings {
       icon: Icons.location_on_outlined,
     ),
   ].obs;
-
-  void toggleEdit() {
-    isEditing.value = !isEditing.value;
-  }
-
-  void saveChanges() {
-    isEditing.value = false;
-  }
 
   @override
   void dependencies() {

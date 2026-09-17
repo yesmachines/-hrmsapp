@@ -19,6 +19,7 @@ extension LeaveStatusEnum on LeaveStatus {
       case 'rejected':
         return LeaveStatus.rejected;
       case 'pending':
+      case 'applied':
       case 'requested':
       default:
         return LeaveStatus.requested;

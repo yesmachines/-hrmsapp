@@ -71,7 +71,7 @@ class EmployeeDirectoryModel {
         json["image_url"] ?? json["avatar"] ?? json["photo"] ?? json["image"],
       ),
       status: _status(
-        json["status"] ?? json["employee_status"] ?? json["employment_status"],
+        json["employment_status"] ?? json["status"] ?? json["employee_status"],
       ),
       officeLocation: _string(
         json["office_location"] ??
@@ -92,28 +92,9 @@ String _string(dynamic value) {
 }
 
 String _status(dynamic value) {
-  if (value == 1 || value == true || value == '1') return 'Active';
-  if (value == 0 || value == false || value == '0') return 'Inactive';
   final status = _string(value);
   if (status.isEmpty) return 'Active';
   return status[0].toUpperCase() + status.substring(1);
-}
-
-String _email(dynamic value) {
-  final raw = _string(value);
-  if (raw.isEmpty) return '';
-  final markdown = RegExp(r'\[([^\]]+)\]\(mailto:[^)]+\)').firstMatch(raw);
-  if (markdown != null) return markdown.group(1) ?? raw;
-  return raw.replaceFirst(RegExp(r'^mailto:'), '');
-}
-
-List<EmployeeDirectoryModel> _people(dynamic json) {
-  if (json is! List) return const [];
-  return List.unmodifiable(
-    json.whereType<Map>().map(
-      (item) => EmployeeDirectoryModel.fromJson(item, parseHierarchy: false),
-    ),
-  );
 }
 
 String _joinDate(dynamic value) {

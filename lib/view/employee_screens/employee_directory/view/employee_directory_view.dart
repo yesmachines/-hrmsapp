@@ -62,32 +62,25 @@ class EmployeeDirectoryView extends GetView<EmployeeDirectoryController> {
                           vertical: appSize.size14.h,
                         ),
                         decoration: BoxDecoration(
-                          color: controller.selectedDepartment.value ==
-                                  'Department'
-                              ? appColors.whiteColor
-                              : appColors.submittedBadgeBg,
+                          color: controller.hasDepartmentFilter
+                              ? appColors.submittedBadgeBg
+                              : appColors.whiteColor,
                           borderRadius: BorderRadius.circular(appSize.radius12),
                           border: Border.all(
-                            color: controller.selectedDepartment.value ==
-                                    'Department'
-                                ? appColors.strokeColor
-                                : appColors.brandColor.withValues(alpha: 0.35),
+                            color: controller.hasDepartmentFilter
+                                ? appColors.brandColor.withValues(alpha: 0.35)
+                                : appColors.strokeColor,
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              controller.selectedDepartment.value ==
-                                      'Department'
-                                  ? 'Department'
-                                  : controller.selectedDepartment.value
-                                      .replaceAll(' Department', ''),
+                              controller.departmentChipLabel,
                               style: fontStyles.font12LightGrey500.copyWith(
-                                color: controller.selectedDepartment.value ==
-                                        'Department'
-                                    ? appColors.blackColor
-                                    : appColors.brandColor,
+                                color: controller.hasDepartmentFilter
+                                    ? appColors.brandColor
+                                    : appColors.blackColor,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0,
                               ),

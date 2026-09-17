@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 
 import '../../../../main.dart';
@@ -20,6 +22,7 @@ class LoginService {
         apiRoutes.login,
         data: FormData.fromMap(data),
       );
+      log("the response is ${response.data}");
       if (response.statusCode == 200) {
         LoginModel loginModel = LoginModel.fromJson(response.data["data"]);
         return loginModel;

@@ -11,6 +11,7 @@ import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/controlle
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/service/leave_apply_validation.dart';
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/apply_leave_info_card.dart';
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/apply_leave_upload_box.dart';
+import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/leave_policy_card.dart';
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/leave_type_extra_fields.dart';
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/leave_type_widget.dart';
 import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/view/widgets/user_info_widget.dart';
@@ -67,6 +68,14 @@ class ApplyLeaveView extends GetView<ApplyLeaveController> {
                     ),
                     SizedBox(height: appSize.size8.h),
                     LeaveTypeWidget(),
+                    Obx(() {
+                      final policy = controller.selectedPolicy;
+                      if (policy == null) return const SizedBox.shrink();
+                      return Padding(
+                        padding: EdgeInsets.only(top: appSize.size12.h),
+                        child: LeavePolicyCard(policy: policy),
+                      );
+                    }),
                     SizedBox(height: appSize.size16.h),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +163,8 @@ class ApplyLeaveView extends GetView<ApplyLeaveController> {
                       );
                     }),
                     Obx(() {
-                      if (controller.selectedKind != LeaveApplyKind.sick) {
+                      if (controller.selectedKind != LeaveApplyKind.sick ||
+                          controller.selectedPolicy != null) {
                         return const SizedBox.shrink();
                       }
                       return ApplyLeaveInfoCard(

@@ -7,8 +7,6 @@ import '../../profile/service/model/profile_model.dart';
 import '../service/model/contact_info_field.dart';
 
 class ContactInformationController extends GetxController with Bindings {
-  final RxBool isEditing = false.obs;
-
   Rxn<ProfileModel> profileData = Rxn(null);
   RxBool hasError = RxBool(false);
 
@@ -89,14 +87,6 @@ class ContactInformationController extends GetxController with Bindings {
     //   value: 'Villa 18, Jumeirah Village, Dubai',
     //   icon: Icons.home_outlined,
     // ),
-
-  void toggleEdit() {
-    isEditing.value = !isEditing.value;
-  }
-
-  void saveChanges() {
-    isEditing.value = false;
-  }
 
   @override
   void dependencies() {

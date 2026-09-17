@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
-import 'package:yes_hrm/utils/buttons/custom_button.dart';
 import 'package:yes_hrm/utils/image_handler/image_handler.dart';
 
 import '../controller/controller.dart';
@@ -27,21 +26,7 @@ class EducationExperienceView extends GetView<EducationExperienceController> {
                   appSize.size16.w,
                   appSize.size16.h,
                 ),
-                child: Column(
-                  children: [
-                    _InfoCard(),
-                    SizedBox(height: appSize.size24.h),
-                    CustomButton(
-                      buttonName: 'Save Changes',
-                      onPressed: controller.saveChanges,
-                      buttonWidth: double.infinity,
-                      radius: appSize.radius12,
-                      padding: EdgeInsets.symmetric(
-                        vertical: appSize.size16.h,
-                      ),
-                    ),
-                  ],
-                ),
+                child: _InfoCard(),
               ),
             ),
           ],
@@ -51,8 +36,7 @@ class EducationExperienceView extends GetView<EducationExperienceController> {
   }
 }
 
-class _EducationExperienceAppBar
-    extends GetView<EducationExperienceController> {
+class _EducationExperienceAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -86,20 +70,7 @@ class _EducationExperienceAppBar
               style: fontStyles.font16Black700,
             ),
           ),
-          InkWell(
-            onTap: controller.toggleEdit,
-            borderRadius: BorderRadius.circular(appSize.radius60),
-            child: SizedBox(
-              width: appSize.size44.w,
-              height: appSize.size44.w,
-              child: Icon(
-                Icons.edit_outlined,
-                color: appColors.brandColor,
-                size: appSize.icon24,
-              ),
-            ),
-          ),
-          SizedBox(width: appSize.size4.w),
+          SizedBox(width: appSize.size44.w, height: appSize.size44.w),
         ],
       ),
     );

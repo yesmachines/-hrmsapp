@@ -3,13 +3,22 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_screen/service/model/leave_event_model.dart';
+import 'package:yes_hrm/view/employee_screens/leave/leave_screen/service/model/leave_holiday_model.dart';
+import 'package:yes_hrm/view/employee_screens/leave/leave_screen/service/service.dart';
 import 'package:yes_hrm/view/employee_screens/leave/leave_screen/view/widgets/leave_balance_bottom_sheet.dart';
 
 class LeaveController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();
   final RxString searchQuery = ''.obs;
-  final Rx<DateTime> focusedMonth = DateTime(2026, 7).obs;
-  final Rxn<DateTime> selectedDate = Rxn(DateTime(2026, 7, 16));
+  final Rx<DateTime> focusedMonth = DateTime.now().obs;
+  final Rxn<DateTime> selectedDate = Rxn(DateTime.now());
+  final RxList<LeaveHolidayItem> festivals = <LeaveHolidayItem>[].obs;
+  final RxList<LeaveHolidayItem> holidays = <LeaveHolidayItem>[].obs;
+  final RxList<CalendarAppliedLeave> appliedLeaves = <CalendarAppliedLeave>[].obs;
+  final RxBool holidaysLoading = false.obs;
+
+  int _holidayFetchId = 0;
+  int? _loadedMonthKey;
 
   late final List<LeaveActionModel> actions = [
     LeaveActionModel(
@@ -39,25 +48,60 @@ class LeaveController extends GetxController with Bindings {
     ),
   ];
 
+  int _monthKey(DateTime date) => date.year * 100 + date.month;
 
-  String get monthLabel => DateFormat('MMMM yyyy').format(focusedMonth.value);
+  @override
+  void onInit() {
+    fetchHolidays();
+    super.onInit();
+  }
 
   void onSearchChanged(String value) {
     searchQuery.value = value;
   }
 
-  void previousMonth() {
-    final current = focusedMonth.value;
-    focusedMonth.value = DateTime(current.year, current.month - 1);
+  void onDateSelected(DateTime selected, DateTime focused) {
+    selectedDate.value = selected;
+    focusedMonth.value = focused;
   }
 
-  void nextMonth() {
-    final current = focusedMonth.value;
-    focusedMonth.value = DateTime(current.year, current.month + 1);
+  void onPageChanged(DateTime focused) {
+    focusedMonth.value = focused;
+    fetchHolidays();
   }
 
-  void onDateSelected(DateTime date) {
-    selectedDate.value = date;
+  Future<void> fetchHolidays() async {
+    final month = focusedMonth.value.month;
+    final monthKey = _monthKey(focusedMonth.value);
+    if (_loadedMonthKey == monthKey) return;
+
+    final fetchId = ++_holidayFetchId;
+    _loadedMonthKey = monthKey;
+    holidaysLoading.value = true;
+    festivals.clear();
+    holidays.clear();
+    appliedLeaves.clear();
+    try {
+      final result = await LeaveCalendarService.getHolidays(
+        month: month,
+        year: focusedMonth.value.year,
+      );
+      if (fetchId != _holidayFetchId) return;
+      festivals.assignAll(result.festivals);
+      holidays.assignAll(result.holidays);
+      appliedLeaves.assignAll(result.leaves);
+    } catch (_) {
+      if (fetchId != _holidayFetchId) return;
+      _loadedMonthKey = null;
+      notificationHandler.sendNotification(
+        message: 'Unable to load holidays',
+        notificationType: .error,
+      );
+    } finally {
+      if (fetchId == _holidayFetchId) {
+        holidaysLoading.value = false;
+      }
+    }
   }
 
   void onActionTap(LeaveActionModel action) {
@@ -87,40 +131,157 @@ class LeaveController extends GetxController with Bindings {
         selected.day == day.day;
   }
 
-  // bool isInLeaveRange(DateTime day) {
-  //   return events.any(
-  //     (event) =>
-  //         event.badge == LeaveEventBadge.approved &&
-  //         event.isRange &&
-  //         event.occursOn(day),
-  //   );
-  // }
+  List<LeaveHolidayItem> festivalsOn(DateTime day) {
+    return festivals.where((item) => item.occursOn(day)).toList();
+  }
 
-  // bool isRangeStart(DateTime day) {
-  //   return events.any(
-  //     (event) =>
-  //         event.isRange &&
-  //         event.startDate.year == day.year &&
-  //         event.startDate.month == day.month &&
-  //         event.startDate.day == day.day,
-  //   );
-  // }
+  AppliedLeaveTone? leaveToneOn(DateTime day) {
+    final tones = appliedLeaves
+        .where((item) => item.occursOn(day))
+        .map((item) => item.tone)
+        .toSet();
+    if (tones.contains(AppliedLeaveTone.pending)) {
+      return AppliedLeaveTone.pending;
+    }
+    if (tones.contains(AppliedLeaveTone.approvedUpcoming)) {
+      return AppliedLeaveTone.approvedUpcoming;
+    }
+    if (tones.contains(AppliedLeaveTone.approvedPast)) {
+      return AppliedLeaveTone.approvedPast;
+    }
+    return null;
+  }
 
-  // bool isRangeEnd(DateTime day) {
-  //   return events.any(
-  //     (event) =>
-  //         event.isRange &&
-  //         event.endDate.year == day.year &&
-  //         event.endDate.month == day.month &&
-  //         event.endDate.day == day.day,
-  //   );
-  // }
+  Color leaveToneColor(AppliedLeaveTone tone) {
+    switch (tone) {
+      case AppliedLeaveTone.pending:
+        return appColors.orangeColor;
+      case AppliedLeaveTone.approvedUpcoming:
+        return appColors.checkOutGreen;
+      case AppliedLeaveTone.approvedPast:
+        return appColors.tileSteel;
+    }
+  }
 
-  // bool hasEventDot(DateTime day) {
-  //   return events.any(
-  //     (event) => event.occursOn(day) && !isInLeaveRange(day),
-  //   );
-  // }
+  Color? rangeColorOn(DateTime day) {
+    final tone = leaveToneOn(day);
+    if (tone != null) {
+      return leaveToneColor(tone).withValues(alpha: 0.22);
+    }
+    if (isInHolidayRange(day)) {
+      return appColors.brandColor.withValues(alpha: 0.14);
+    }
+    return null;
+  }
+
+  Object? _rangeKeyOn(DateTime day) {
+    final tone = leaveToneOn(day);
+    if (tone != null) return tone;
+    if (isInHolidayRange(day)) return 'holiday';
+    return null;
+  }
+
+  bool isRangeStart(DateTime day) {
+    final key = _rangeKeyOn(day);
+    if (key == null) return false;
+    final previous = DateTime(day.year, day.month, day.day - 1);
+    return _rangeKeyOn(previous) != key;
+  }
+
+  bool isRangeEnd(DateTime day) {
+    final key = _rangeKeyOn(day);
+    if (key == null) return false;
+    final next = DateTime(day.year, day.month, day.day + 1);
+    return _rangeKeyOn(next) != key;
+  }
+
+  List<CalendarDayDetail> get selectedDateItems {
+    final day = selectedDate.value;
+    if (day == null) return const [];
+    final format = DateFormat('d MMM');
+    String dateLabel(DateTime start, DateTime end) {
+      final startDay = DateTime(start.year, start.month, start.day);
+      final endDay = DateTime(end.year, end.month, end.day);
+      if (startDay == endDay) return format.format(start);
+      return '${format.format(start)} - ${format.format(end)}';
+    }
+
+    return [
+      ...festivals.where((item) => item.occursOn(day)).map((item) {
+        return CalendarDayDetail(
+          title: item.name,
+          dateLabel: dateLabel(item.startDate, item.endDate),
+          badge: 'Festival',
+          accent: appColors.orangeColor,
+          badgeBg: appColors.acceptedBadgeBg,
+          badgeText: appColors.acceptedBadgeText,
+        );
+      }),
+      ...holidays.where((item) => item.occursOn(day)).map((item) {
+        return CalendarDayDetail(
+          title: item.name,
+          dateLabel: dateLabel(item.startDate, item.endDate),
+          badge: 'Holiday',
+          accent: appColors.brandColor,
+          badgeBg: appColors.submittedBadgeBg,
+          badgeText: appColors.submittedBadgeText,
+        );
+      }),
+      ...appliedLeaves.where((item) => item.occursOn(day)).map((item) {
+        return CalendarDayDetail(
+          title: item.name,
+          dateLabel: dateLabel(item.startDate, item.endDate),
+          badge: _leaveBadgeLabel(item.tone),
+          accent: leaveToneColor(item.tone),
+          badgeBg: _leaveBadgeBg(item.tone),
+          badgeText: _leaveBadgeText(item.tone),
+        );
+      }),
+    ];
+  }
+
+  String _leaveBadgeLabel(AppliedLeaveTone tone) {
+    switch (tone) {
+      case AppliedLeaveTone.pending:
+        return 'Pending';
+      case AppliedLeaveTone.approvedUpcoming:
+        return 'Approved';
+      case AppliedLeaveTone.approvedPast:
+        return 'Past';
+    }
+  }
+
+  Color _leaveBadgeBg(AppliedLeaveTone tone) {
+    switch (tone) {
+      case AppliedLeaveTone.pending:
+        return appColors.pendingBadgeBg;
+      case AppliedLeaveTone.approvedUpcoming:
+        return appColors.activeBadgeBg;
+      case AppliedLeaveTone.approvedPast:
+        return appColors.scaffoldGreyColor;
+    }
+  }
+
+  Color _leaveBadgeText(AppliedLeaveTone tone) {
+    switch (tone) {
+      case AppliedLeaveTone.pending:
+        return appColors.pendingBadgeText;
+      case AppliedLeaveTone.approvedUpcoming:
+        return appColors.activeBadgeText;
+      case AppliedLeaveTone.approvedPast:
+        return appColors.mediumGreyColor;
+    }
+  }
+
+  String selectedDateLabel() {
+    final day = selectedDate.value;
+    if (day == null) return '';
+    return DateFormat('d MMM yyyy').format(day);
+  }
+
+  bool isInHolidayRange(DateTime day) {
+    return holidays.any((item) => item.occursOn(day));
+  }
 
   String eventDateLabel(LeaveEventModel event) {
     final format = DateFormat('d MMM');

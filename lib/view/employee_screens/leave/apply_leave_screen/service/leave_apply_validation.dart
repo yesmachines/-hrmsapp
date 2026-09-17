@@ -96,6 +96,9 @@ class LeaveApplyValidationInput {
     this.festivalId,
     this.alreadyTakenPilgrimage = false,
     this.hasExistingAttachment = false,
+    this.policyRequiresAttachment = false,
+    this.requiresWeekendDocument = false,
+    this.requiresDocumentAfterDays,
   });
 
   final String? leaveTypeCode;
@@ -129,6 +132,9 @@ class LeaveApplyValidationInput {
   final String? festivalId;
   final bool alreadyTakenPilgrimage;
   final bool hasExistingAttachment;
+  final bool policyRequiresAttachment;
+  final bool requiresWeekendDocument;
+  final int? requiresDocumentAfterDays;
 }
 
 class LeaveApplyValidationResult {
@@ -182,6 +188,9 @@ LeaveApplyValidationResult validateLeaveApply(LeaveApplyValidationInput input) {
     final handoverResult = _validateHandover(input);
     if (!handoverResult.isValid) return handoverResult;
   }
+
+  final documentResult = _validatePolicyDocuments(input);
+  if (!documentResult.isValid) return documentResult;
 
   switch (kind) {
     case LeaveApplyKind.annual:
@@ -246,18 +255,50 @@ LeaveApplyValidationResult _validateHandover(LeaveApplyValidationInput input) {
   return const LeaveApplyValidationResult.valid();
 }
 
-LeaveApplyValidationResult _validateSick(LeaveApplyValidationInput input) {
-  final needsCertificate = input.appliedDays > 2 || input.includesWeekend;
-  if (needsCertificate &&
-      input.certificates.isEmpty &&
-      !input.hasExistingAttachment) {
+LeaveApplyValidationResult _validatePolicyDocuments(
+  LeaveApplyValidationInput input,
+) {
+  final needsDocument =
+      input.policyRequiresAttachment ||
+      (input.requiresWeekendDocument && input.includesWeekend) ||
+      (input.requiresDocumentAfterDays != null &&
+          input.appliedDays > input.requiresDocumentAfterDays!);
+
+  if (needsDocument && !_hasSupportingDocument(input)) {
     return const LeaveApplyValidationResult.invalid(
-      'Upload medical certificate for leave more than 2 days or including weekend',
+      'Upload supporting document to continue',
     );
   }
-  if (_hasOversizedCertificate(input.certificates)) {
+  if (_hasOversizedCertificate([
+    ...input.certificates,
+    ...input.doctorLetter,
+  ])) {
     return const LeaveApplyValidationResult.invalid(
       'Certificate must be 10MB or smaller',
+    );
+  }
+  return const LeaveApplyValidationResult.valid();
+}
+
+bool _hasSupportingDocument(LeaveApplyValidationInput input) {
+  return input.certificates.isNotEmpty ||
+      input.doctorLetter.isNotEmpty ||
+      input.hasExistingAttachment;
+}
+
+LeaveApplyValidationResult _validateSick(LeaveApplyValidationInput input) {
+  final hasPolicyDocumentRules =
+      input.policyRequiresAttachment ||
+      input.requiresWeekendDocument ||
+      input.requiresDocumentAfterDays != null;
+  if (hasPolicyDocumentRules) {
+    return const LeaveApplyValidationResult.valid();
+  }
+
+  final needsCertificate = input.appliedDays > 2 || input.includesWeekend;
+  if (needsCertificate && !_hasSupportingDocument(input)) {
+    return const LeaveApplyValidationResult.invalid(
+      'Upload medical certificate for leave more than 2 days or including weekend',
     );
   }
   return const LeaveApplyValidationResult.valid();
@@ -391,9 +432,16 @@ bool leaveRangeIncludesWeekend(DateTime start, DateTime end) {
   return false;
 }
 
-String sickLeavePayTier({required int appliedDays, required int usedSickDays}) {
+String sickLeavePayTier({
+  required int appliedDays,
+  required int usedSickDays,
+  int? fullPayDays,
+  int? halfPayDays,
+}) {
+  final full = fullPayDays ?? 15;
+  final half = halfPayDays ?? 30;
   final totalUsedAfter = usedSickDays + appliedDays;
-  if (totalUsedAfter <= 15) return 'Full Pay';
-  if (totalUsedAfter <= 45) return 'Half Pay';
+  if (totalUsedAfter <= full) return 'Full Pay';
+  if (totalUsedAfter <= full + half) return 'Half Pay';
   return 'No Pay';
 }

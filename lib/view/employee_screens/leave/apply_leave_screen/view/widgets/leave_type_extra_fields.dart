@@ -147,8 +147,12 @@ class _SickFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Obx(
-          () => ApplyLeaveInfoCard(
+        Obx(() {
+          final policy = controller.selectedPolicy;
+          final fullPay = policy?.fullPayDays ?? 15;
+          final halfPay = policy?.halfPayDays ?? 30;
+          final noPay = policy?.noPayDays ?? 45;
+          return ApplyLeaveInfoCard(
             title: 'Sick Leave Pay Tier',
             icon: Icons.info_outline_rounded,
             accent: appColors.submittedBadgeText,
@@ -158,21 +162,21 @@ class _SickFields extends StatelessWidget {
                 text: 'Calculated tier: ${controller.sickPayTierLabel}',
                 color: const Color(0xFF1D4ED8),
               ),
-              const ApplyLeaveBullet(
-                text: 'First 15 Days → Full Pay',
-                color: Color(0xFF1D4ED8),
+              ApplyLeaveBullet(
+                text: 'First $fullPay Days → Full Pay',
+                color: const Color(0xFF1D4ED8),
               ),
-              const ApplyLeaveBullet(
-                text: 'Next 30 Days → Half Pay',
-                color: Color(0xFF1D4ED8),
+              ApplyLeaveBullet(
+                text: 'Next $halfPay Days → Half Pay',
+                color: const Color(0xFF1D4ED8),
               ),
-              const ApplyLeaveBullet(
-                text: 'Remaining 45 Days → No Pay',
-                color: Color(0xFF1D4ED8),
+              ApplyLeaveBullet(
+                text: 'Remaining $noPay Days → No Pay',
+                color: const Color(0xFF1D4ED8),
               ),
             ],
-          ),
-        ),
+          );
+        }),
         SizedBox(height: appSize.size12.h),
         Obx(() {
           if (!controller.sickNeedsCertificate) {

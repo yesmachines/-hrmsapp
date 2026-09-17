@@ -14,8 +14,6 @@ class EmergencyContactField {
 }
 
 class EmergencyContactController extends GetxController with Bindings {
-  final RxBool isEditing = false.obs;
-
   final RxList<EmergencyContactField> fields = <EmergencyContactField>[
     const EmergencyContactField(
       label: 'BLOOD GROUP',
@@ -53,14 +51,6 @@ class EmergencyContactController extends GetxController with Bindings {
       icon: Icons.phone_outlined,
     ),
   ].obs;
-
-  void toggleEdit() {
-    isEditing.value = !isEditing.value;
-  }
-
-  void saveChanges() {
-    isEditing.value = false;
-  }
 
   @override
   void dependencies() {

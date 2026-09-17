@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/middleware/api_call_handler/api_call_handler.dart';
 import 'package:yes_hrm/view/employee_screens/employee_directory/service/model/employee_directory_list_model.dart';
-import 'package:yes_hrm/view/employee_screens/employee_directory/service/model/employee_directory_model.dart';
 
 class EmployeeDirectoryService {
   static Future<EmployeeDirectoryListModel> getEmployees({

@@ -1,4 +1,4 @@
-enum VisitTab { today, tomorrow, dayAfterTomorrow }
+enum VisitTab { history, today, upcoming }
 
 enum VisitStatus { approved, completed, rejected, requested }
 
@@ -7,10 +7,10 @@ extension VisitTabX on VisitTab {
     switch (this) {
       case VisitTab.today:
         return 'today';
-      case VisitTab.tomorrow:
-        return 'tomorrow';
-      case VisitTab.dayAfterTomorrow:
-        return 'day_after_tomorrow';
+      case VisitTab.upcoming:
+        return 'after_today';
+      case VisitTab.history:
+        return 'before_today';
     }
   }
 
@@ -18,10 +18,10 @@ extension VisitTabX on VisitTab {
     switch (this) {
       case VisitTab.today:
         return 'Today';
-      case VisitTab.tomorrow:
-        return 'Tomorrow';
-      case VisitTab.dayAfterTomorrow:
-        return 'Day After';
+      case VisitTab.upcoming:
+        return 'Upcoming';
+      case VisitTab.history:
+        return 'History';
     }
   }
 }

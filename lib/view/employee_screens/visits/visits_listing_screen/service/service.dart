@@ -12,11 +12,19 @@ class VisitsService {
     VisitStatus? status,
   }) async {
     try {
+      print(
+        "the parameter is ${{
+          "page": page,
+          "date_filter": dateFilter.apiValue,
+          "search": search,
+          "status": status?.apiValue,
+        }}",
+      );
       Response response = await dioApiCall().get(
         apiRoutes.visits,
         queryParameters: {
           "page": page,
-          // "date_filter": dateFilter.apiValue,
+          "date_filter": dateFilter.apiValue,
           "search": search,
           "status": status?.apiValue,
         },

@@ -90,6 +90,7 @@ class LeaveTypeModel {
     required this.requiresAttachment,
     required this.requiresHandover,
     required this.balance,
+    this.allowBalance = false,
     this.festivals = const [],
     this.policy,
   });
@@ -100,8 +101,9 @@ class LeaveTypeModel {
   final bool requiresAttachment;
   final bool requiresHandover;
   final LeaveBalanceModel balance;
+  final bool allowBalance;
   final List<FestivalModel> festivals;
-  final dynamic policy;
+  final LeavePolicyModel? policy;
 
   factory LeaveTypeModel.fromJson(Map json) {
     return LeaveTypeModel(
@@ -110,11 +112,72 @@ class LeaveTypeModel {
       leaveCode: (json["leave_code"] ?? json["code"] ?? "").toString(),
       requiresAttachment: json["requires_attachment"] ?? false,
       requiresHandover: json["requires_handover"] ?? false,
+      allowBalance: json["allow_balance"] == true,
       balance: LeaveBalanceModel.fromJson(json["balance"] ?? {}),
       festivals: getFestivalsFromJson(json["festivals"] ?? []),
-      policy: json["policy"],
+      policy: LeavePolicyModel.maybeFromJson(json["policy"]),
     );
   }
+}
+
+class LeavePolicyModel {
+  const LeavePolicyModel({
+    this.id,
+    this.fullPayDays,
+    this.halfPayDays,
+    this.noPayDays,
+    this.requiresDocumentAfterDays,
+    this.requiresWeekendDocument = false,
+    this.requiresAttachment = false,
+    this.carryForward = false,
+    this.encashment = false,
+    this.probationApplicable = false,
+    this.minimumServiceMonths,
+    this.remarks,
+  });
+
+  final String? id;
+  final int? fullPayDays;
+  final int? halfPayDays;
+  final int? noPayDays;
+  final int? requiresDocumentAfterDays;
+  final bool requiresWeekendDocument;
+  final bool requiresAttachment;
+  final bool carryForward;
+  final bool encashment;
+  final bool probationApplicable;
+  final int? minimumServiceMonths;
+  final String? remarks;
+
+  static LeavePolicyModel? maybeFromJson(dynamic json) {
+    if (json is Map) return LeavePolicyModel.fromJson(json);
+    return null;
+  }
+
+  factory LeavePolicyModel.fromJson(Map json) {
+    final remarks = json["remarks"]?.toString().trim();
+    return LeavePolicyModel(
+      id: json["id"]?.toString(),
+      fullPayDays: _asInt(json["full_pay_days"]),
+      halfPayDays: _asInt(json["half_pay_days"]),
+      noPayDays: _asInt(json["no_pay_days"]),
+      requiresDocumentAfterDays: _asInt(json["requires_document_after_days"]),
+      requiresWeekendDocument: json["requires_weekend_document"] == true,
+      requiresAttachment: json["requires_attachment"] == true,
+      carryForward: json["carry_forward"] == true,
+      encashment: json["encashment"] == true,
+      probationApplicable: json["probation_applicable"] == true,
+      minimumServiceMonths: _asInt(json["minimum_service_months"]),
+      remarks: (remarks == null || remarks.isEmpty) ? null : remarks,
+    );
+  }
+}
+
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
 }
 
 class LeaveBalanceModel {
@@ -122,17 +185,20 @@ class LeaveBalanceModel {
     required this.total,
     required this.used,
     required this.balance,
+    this.pending = 0,
   });
 
   final int total;
   final int used;
   final int balance;
+  final int pending;
 
   factory LeaveBalanceModel.fromJson(Map json) {
     return LeaveBalanceModel(
       total: json["total"] ?? 0,
       used: json["used"] ?? 0,
       balance: json["balance"] ?? 0,
+      pending: json["pending"] ?? 0,
     );
   }
 }

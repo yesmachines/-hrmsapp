@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import 'package:yes_hrm/utils/image_handler/image_handler.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
+import 'package:yes_hrm/view/employee_screens/leave/apply_leave_screen/service/service.dart';
 
 class LeaveBalanceItem {
   const LeaveBalanceItem({
@@ -12,7 +14,7 @@ class LeaveBalanceItem {
     required this.iconBg,
     required this.iconColor,
     this.days,
-    this.showChevron = false,
+    this.pending = 0,
   });
 
   final String title;
@@ -20,44 +22,59 @@ class LeaveBalanceItem {
   final Color iconBg;
   final Color iconColor;
   final int? days;
-  final bool showChevron;
+  final int pending;
 }
 
-Future<dynamic> showLeaveBalanceBottomSheet({
-  String initialYear = '2026',
-  int totalDays = 22,
-  List<LeaveBalanceItem>? items,
-}) {
-  final year = initialYear.obs;
-  final leaveItems =
-      items ??
-      [
-        LeaveBalanceItem(
-          title: 'Annual Leave',
-          icon: Icons.wb_sunny_outlined,
-          iconBg: appColors.submittedBadgeBg,
-          iconColor: appColors.brandColor,
-          days: 22,
-        ),
-        LeaveBalanceItem(
-          title: 'Sick Leave',
-          icon: Icons.medical_services_outlined,
-          iconBg: appColors.profileIconPurpleBg,
-          iconColor: appColors.profileIconPurple,
-          showChevron: true,
-        ),
-        LeaveBalanceItem(
-          title: 'Compensatory Leave',
-          icon: Icons.workspace_premium_outlined,
-          iconBg: appColors.profileIconGreenBg,
-          iconColor: appColors.profileIconGreen,
-          showChevron: true,
-        ),
-      ];
+Future<dynamic> showLeaveBalanceBottomSheet() {
+  final year = DateTime.now().year.toString().obs;
+  final loading = true.obs;
+  final leaveItems = <LeaveBalanceItem>[].obs;
+  final totalDays = 0.obs;
+
+  Future<void> loadBalance() async {
+    loading.value = true;
+    try {
+      final meta = await ApplyLeaveService.getLeaveMeta(
+        year: int.tryParse(year.value),
+      );
+      final types = meta.leaveTypes;
+      final countable = types.where((type) => type.allowBalance).toList();
+      final source = countable.isNotEmpty ? countable : types;
+      totalDays.value = source.fold<int>(
+        0,
+        (sum, type) => sum + type.balance.balance,
+      );
+      leaveItems.assignAll(
+        types.map((type) {
+          final style = _styleFor(type.leaveCode, type.leaveName);
+          return LeaveBalanceItem(
+            title: type.leaveName,
+            icon: style.icon,
+            iconBg: style.bg,
+            iconColor: style.color,
+            days: type.balance.balance,
+            pending: type.balance.pending,
+          );
+        }),
+      );
+    } catch (_) {
+      if (leaveItems.isEmpty) {
+        notificationHandler.sendNotification(
+          message: 'Unable to load leave balance',
+          notificationType: .error,
+        );
+      }
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  loadBalance();
 
   return Get.bottomSheet(
     Container(
       width: double.infinity,
+      constraints: BoxConstraints(maxHeight: Get.height * 0.85),
       padding: EdgeInsets.fromLTRB(
         appSize.size16.w,
         appSize.size10.h,
@@ -72,43 +89,49 @@ Future<dynamic> showLeaveBalanceBottomSheet({
       ),
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: appSize.size40.w,
-                height: appSize.size4.h,
-                decoration: BoxDecoration(
-                  color: appColors.strokeColor,
-                  borderRadius: BorderRadius.circular(appSize.radius60),
+        child: Obx(() {
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: appSize.size40.w,
+                  height: appSize.size4.h,
+                  decoration: BoxDecoration(
+                    color: appColors.strokeColor,
+                    borderRadius: BorderRadius.circular(appSize.radius60),
+                  ),
                 ),
-              ),
-              SizedBox(height: appSize.size16.h),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text('Leave Balance', style: fontStyles.font20Black700Fixed),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: Get.back,
-                      borderRadius: BorderRadius.circular(appSize.radius60),
-                      child: ImageHandler(
-                        imageType: ImageType.svg,
-                        imageUrl: iconData.closeRoundedSvg,
-                        width: appSize.icon24,
-                        height: appSize.icon24,
+                SizedBox(height: appSize.size16.h),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Text(
+                      'Leave Balance',
+                      style: fontStyles.font20Black700Fixed,
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: Get.back,
+                        borderRadius: BorderRadius.circular(appSize.radius60),
+                        child: ImageHandler(
+                          imageType: ImageType.svg,
+                          imageUrl: iconData.closeRoundedSvg,
+                          width: appSize.icon24,
+                          height: appSize.icon24,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: appSize.size16.h),
-              Obx(
-                () => InkWell(
-                  onTap: () => _pickYear(year),
+                  ],
+                ),
+                SizedBox(height: appSize.size16.h),
+                InkWell(
+                  onTap: () async {
+                    await _pickYear(year);
+                    loadBalance();
+                  },
                   borderRadius: BorderRadius.circular(appSize.radius60),
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -133,68 +156,87 @@ Future<dynamic> showLeaveBalanceBottomSheet({
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: appSize.size16.h),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(
-                  horizontal: appSize.size16.w,
-                  vertical: appSize.size20.h,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: appColors.profileIconBlueBg),
-                  gradient: LinearGradient(
-                    begin: AlignmentGeometry.xy(0, -1),
-                    end: AlignmentGeometry.xy(0, 0),
-                    colors: [appColors.lightBlue, appColors.whiteColor],
+                SizedBox(height: appSize.size16.h),
+                if (loading.value)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: LoadingScreen(),
+                  )
+                else ...[
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: appSize.size16.w,
+                      vertical: appSize.size20.h,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: appColors.profileIconBlueBg),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [appColors.lightBlue, appColors.whiteColor],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: appColors.blackColor.withValues(alpha: 0.09),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(appSize.radius16),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 44.w,
+                          height: 44.w,
+                          decoration: BoxDecoration(
+                            color: appColors.profileIconBlueBg,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.calendar_month_outlined,
+                            color: appColors.brandColor,
+                            size: 22.sp,
+                          ),
+                        ),
+                        SizedBox(height: appSize.size10.h),
+                        Text(
+                          'Total Leave Balance',
+                          style: fontStyles.font12LightGrey500.copyWith(
+                            letterSpacing: 0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: appSize.size6.h),
+                        Text(
+                          '${totalDays.value} Days',
+                          style: fontStyles.font24Brand700,
+                        ),
+                      ],
+                    ),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: appColors.blackColor.withValues(alpha: 0.09),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(appSize.radius16),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 44.w,
-                      height: 44.w,
-                      decoration: BoxDecoration(
-                        color: appColors.profileIconBlueBg,
-                        shape: BoxShape.circle,
+                  SizedBox(height: appSize.size16.h),
+                  if (leaveItems.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: appSize.size16.h),
+                      child: Text(
+                        'No leave balance found',
+                        style: fontStyles.font14LightGrey400,
                       ),
-                      child: Icon(
-                        Icons.calendar_month_outlined,
-                        color: appColors.brandColor,
-                        size: 22.sp,
+                    )
+                  else
+                    ...leaveItems.map(
+                      (item) => Padding(
+                        padding: EdgeInsets.only(bottom: appSize.size10.h),
+                        child: _LeaveBalanceTile(item: item),
                       ),
                     ),
-                    SizedBox(height: appSize.size10.h),
-                    Text(
-                      'Total Leave Balance',
-                      style: fontStyles.font12LightGrey500.copyWith(
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: appSize.size6.h),
-                    Text('$totalDays Days', style: fontStyles.font24Brand700),
-                  ],
-                ),
-              ),
-              SizedBox(height: appSize.size16.h),
-              ...leaveItems.map(
-                (item) => Padding(
-                  padding: EdgeInsets.only(bottom: appSize.size10.h),
-                  child: _LeaveBalanceTile(item: item),
-                ),
-              ),
-            ],
-          ),
-        ),
+                ],
+              ],
+            ),
+          );
+        }),
       ),
     ),
     isScrollControlled: true,
@@ -203,9 +245,82 @@ Future<dynamic> showLeaveBalanceBottomSheet({
   );
 }
 
-void _pickYear(RxString year) {
-  const years = ['2026', '2025', '2024'];
-  customBottomSheet(
+({IconData icon, Color bg, Color color}) _styleFor(String code, String name) {
+  final raw = '${code}_$name'.toLowerCase();
+  if (raw.contains('annual')) {
+    return (
+      icon: Icons.wb_sunny_outlined,
+      bg: appColors.submittedBadgeBg,
+      color: appColors.brandColor,
+    );
+  }
+  if (raw.contains('sick')) {
+    return (
+      icon: Icons.medical_services_outlined,
+      bg: appColors.profileIconPurpleBg,
+      color: appColors.profileIconPurple,
+    );
+  }
+  if (raw.contains('compensat')) {
+    return (
+      icon: Icons.workspace_premium_outlined,
+      bg: appColors.profileIconGreenBg,
+      color: appColors.profileIconGreen,
+    );
+  }
+  if (raw.contains('festival')) {
+    return (
+      icon: Icons.celebration_outlined,
+      bg: appColors.profileIconOrangeBg,
+      color: appColors.profileIconOrange,
+    );
+  }
+  if (raw.contains('compassionate')) {
+    return (
+      icon: Icons.favorite_outline_rounded,
+      bg: appColors.profileIconPinkBg,
+      color: appColors.profileIconPink,
+    );
+  }
+  if (raw.contains('maternity')) {
+    return (
+      icon: Icons.child_care_outlined,
+      bg: appColors.profileIconPinkBg,
+      color: appColors.profileIconPink,
+    );
+  }
+  if (raw.contains('parental')) {
+    return (
+      icon: Icons.family_restroom_rounded,
+      bg: appColors.profileIconTealBg,
+      color: appColors.profileIconTeal,
+    );
+  }
+  if (raw.contains('unpaid')) {
+    return (
+      icon: Icons.money_off_rounded,
+      bg: appColors.scaffoldGreyColor,
+      color: appColors.mediumGreyColor,
+    );
+  }
+  if (raw.contains('pilgrimage')) {
+    return (
+      icon: Icons.mosque_outlined,
+      bg: appColors.profileIconGreenBg,
+      color: appColors.profileIconGreen,
+    );
+  }
+  return (
+    icon: Icons.event_available_outlined,
+    bg: appColors.submittedBadgeBg,
+    color: appColors.brandColor,
+  );
+}
+
+Future<void> _pickYear(RxString year) async {
+  final current = DateTime.now().year;
+  final years = List.generate(4, (index) => '${current - index}');
+  await customBottomSheet(
     title: 'Select Year',
     child: Column(
       children: years.map((option) {
@@ -254,59 +369,57 @@ class _LeaveBalanceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: item.showChevron
-          ? () {
-              notificationHandler.sendNotification(
-                message: '${item.title} details coming soon',
-                notificationType: .warning,
-              );
-            }
-          : null,
-      borderRadius: BorderRadius.circular(appSize.radius16),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: appSize.size14.w,
-          vertical: appSize.size14.h,
-        ),
-        decoration: BoxDecoration(
-          color: appColors.whiteColor,
-          borderRadius: BorderRadius.circular(appSize.radius16),
-          // border: Border.all(
-          //   color: appColors.strokeColor.withValues(alpha: 0.8),
-          // ),
-          boxShadow: [
-            BoxShadow(
-              color: appColors.blackColor.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: appSize.size14.w,
+        vertical: appSize.size14.h,
+      ),
+      decoration: BoxDecoration(
+        color: appColors.whiteColor,
+        borderRadius: BorderRadius.circular(appSize.radius16),
+        boxShadow: [
+          BoxShadow(
+            color: appColors.blackColor.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: item.iconBg,
+              borderRadius: BorderRadius.circular(appSize.radius12),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: item.iconBg,
-                borderRadius: BorderRadius.circular(appSize.radius12),
-              ),
-              child: Icon(item.icon, color: item.iconColor, size: 20.sp),
+            child: Icon(item.icon, color: item.iconColor, size: 20.sp),
+          ),
+          SizedBox(width: appSize.size12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.title, style: fontStyles.font14Black600),
+                if (item.pending > 0) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    '${item.pending} pending',
+                    style: fontStyles.font12LightGrey500.copyWith(
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            SizedBox(width: appSize.size12.w),
-            Expanded(child: Text(item.title, style: fontStyles.font14Black600)),
-            if (item.days != null)
-              Text('${item.days} Days', style: fontStyles.font14Brand700)
-            else if (item.showChevron)
-              Icon(
-                Icons.chevron_right_rounded,
-                color: appColors.lightGreyColor,
-                size: 22.sp,
-              ),
-          ],
-        ),
+          ),
+          Text(
+            '${item.days ?? 0} Days',
+            style: fontStyles.font14Brand700,
+          ),
+        ],
       ),
     );
   }

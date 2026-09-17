@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/view/employee_screens/employee_personal_documents/controller/controller.dart';
 
-import '../../service/model/personal_document.dart';
-
 class PersonalDocumentCard extends GetView<EmployeePersonalDocumentsController> {
   const PersonalDocumentCard({super.key, required this.document});
 
@@ -40,20 +38,19 @@ class PersonalDocumentCard extends GetView<EmployeePersonalDocumentsController> 
               Expanded(
                 child: Text(document.title, style: fontStyles.font14Black600),
               ),
-              if (document.status != null)
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: appSize.size10.w,
                   vertical: appSize.size4.h,
                 ),
                 decoration: BoxDecoration(
-                  color: controller.statusBg(document.status!),
+                  color: controller.statusBg(document.status),
                   borderRadius: BorderRadius.circular(appSize.radius60),
                 ),
                 child: Text(
-                  controller.statusLabel(document.status!),
+                  controller.statusLabel(document.status),
                   style: fontStyles.font10LightGrey500.copyWith(
-                    color: controller.statusText(document.status!),
+                    color: controller.statusText(document.status),
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0,
                   ),

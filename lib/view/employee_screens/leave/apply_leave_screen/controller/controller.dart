@@ -112,14 +112,20 @@ class ApplyLeaveController extends GetxController with Bindings {
     return certificates.isEmpty ? null : certificates.first;
   }
 
+  LeavePolicyModel? get selectedPolicy => selectedLeaveType.value?.policy;
+
   String get uploadTitle {
     switch (selectedKind) {
       case LeaveApplyKind.sick:
-        return 'Upload Medical Certificate';
+        return needsSupportingDocument
+            ? 'Upload Medical Certificate *'
+            : 'Upload Medical Certificate';
       case LeaveApplyKind.maternity:
-        return "Upload Doctor's Letter";
+        return "Upload Doctor's Letter *";
       default:
-        return 'Upload Supporting Document';
+        return needsSupportingDocument
+            ? 'Upload Supporting Document *'
+            : 'Upload Supporting Document';
     }
   }
 
@@ -130,21 +136,50 @@ class ApplyLeaveController extends GetxController with Bindings {
       case LeaveApplyKind.other:
         return true;
       default:
-        return selectedLeaveType.value?.requiresAttachment == true;
+        return selectedLeaveType.value?.requiresAttachment == true ||
+            selectedPolicy?.requiresAttachment == true ||
+            selectedPolicy?.requiresWeekendDocument == true ||
+            selectedPolicy?.requiresDocumentAfterDays != null;
     }
   }
 
   bool get sickNeedsCertificate {
     if (selectedKind != LeaveApplyKind.sick) return false;
+    return needsSupportingDocument;
+  }
+
+  bool get needsSupportingDocument {
+    final policy = selectedPolicy;
+    if (policy?.requiresAttachment == true) return true;
+
     final start = startDate.value;
     final end = endDate.value;
-    if (start == null || end == null) return false;
-    return leaveAppliedDays > 2 || leaveRangeIncludesWeekend(start, end);
+    final includesWeekend =
+        start != null && end != null && leaveRangeIncludesWeekend(start, end);
+
+    if (policy?.requiresWeekendDocument == true && includesWeekend) {
+      return true;
+    }
+    final afterDays = policy?.requiresDocumentAfterDays;
+    if (afterDays != null && leaveAppliedDays > afterDays) {
+      return true;
+    }
+    if (selectedKind == LeaveApplyKind.sick && policy == null) {
+      if (start == null || end == null) return false;
+      return leaveAppliedDays > 2 || includesWeekend;
+    }
+    return false;
   }
 
   String get sickPayTierLabel {
     final used = selectedLeaveType.value?.balance.used ?? 0;
-    return sickLeavePayTier(appliedDays: leaveAppliedDays, usedSickDays: used);
+    final policy = selectedPolicy;
+    return sickLeavePayTier(
+      appliedDays: leaveAppliedDays,
+      usedSickDays: used,
+      fullPayDays: policy?.fullPayDays,
+      halfPayDays: policy?.halfPayDays,
+    );
   }
 
   int get leaveAppliedDays {
@@ -689,6 +724,10 @@ class ApplyLeaveController extends GetxController with Bindings {
             : alreadyTakenPilgrimage.value,
         hasExistingAttachment: isEditMode &&
             (editingLeave.value?.attachments.isNotEmpty ?? false),
+        policyRequiresAttachment: selectedPolicy?.requiresAttachment == true,
+        requiresWeekendDocument:
+            selectedPolicy?.requiresWeekendDocument == true,
+        requiresDocumentAfterDays: selectedPolicy?.requiresDocumentAfterDays,
       ),
     );
   }

@@ -8,9 +8,12 @@ import '../../../../../main.dart';
 import '../../../../../utils/middleware/api_call_handler/api_call_handler.dart';
 
 class ApplyLeaveService {
-  static Future<LeaveMetaModel> getLeaveMeta() async {
+  static Future<LeaveMetaModel> getLeaveMeta({int? year}) async {
     try {
-      Response response = await dioApiCall().get("${apiRoutes.leaves}/meta");
+      Response response = await dioApiCall().get(
+        "${apiRoutes.leaves}/meta",
+        queryParameters: year == null ? null : {"year": year},
+      );
       if (response.statusCode != null &&
           response.statusCode! >= 200 &&
           response.statusCode! <= 300) {

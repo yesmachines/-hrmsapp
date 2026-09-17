@@ -59,7 +59,7 @@ class DocumentInformationView extends GetView<DocumentInformationController> {
   }
 }
 
-class _DocumentInfoAppBar extends GetView<DocumentInformationController> {
+class _DocumentInfoAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -93,20 +93,7 @@ class _DocumentInfoAppBar extends GetView<DocumentInformationController> {
               style: fontStyles.font16Black700,
             ),
           ),
-          InkWell(
-            onTap: controller.toggleEdit,
-            borderRadius: BorderRadius.circular(appSize.radius60),
-            child: SizedBox(
-              width: appSize.size44.w,
-              height: appSize.size44.w,
-              child: Icon(
-                Icons.edit_outlined,
-                color: appColors.brandColor,
-                size: appSize.icon24,
-              ),
-            ),
-          ),
-          SizedBox(width: appSize.size4.w),
+          SizedBox(width: appSize.size44.w, height: appSize.size44.w),
         ],
       ),
     );
