@@ -58,12 +58,12 @@ class ProfileController extends GetxController with Bindings {
       iconColor: appColors.profileIconOrange,
       backgroundColor: appColors.profileIconOrangeBg,
     ),
-    ProfileMenuItem(
-      title: 'Document Information',
-      icon: Icons.description_rounded,
-      iconColor: appColors.profileIconTeal,
-      backgroundColor: appColors.profileIconTealBg,
-    ),
+    // ProfileMenuItem(
+    //   title: 'Document Information',
+    //   icon: Icons.description_rounded,
+    //   iconColor: appColors.profileIconTeal,
+    //   backgroundColor: appColors.profileIconTealBg,
+    // ),
   ];
 
   void onMenuTap(ProfileMenuItem item) {
@@ -83,9 +83,9 @@ class ProfileController extends GetxController with Bindings {
       case 'Education & Experience':
         Get.toNamed(appRoutes.educationExperience);
         break;
-      case 'Document Information':
-        Get.toNamed(appRoutes.documentInformation);
-        break;
+      // case 'Document Information':
+      //   Get.toNamed(appRoutes.documentInformation);
+      //   break;
       default:
         break;
     }

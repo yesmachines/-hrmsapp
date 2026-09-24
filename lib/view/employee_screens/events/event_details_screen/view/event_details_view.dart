@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
 import 'package:yes_hrm/utils/buttons/custom_button.dart';
+import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
+import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/view/employee_screens/events/event_details_screen/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/events/events_listing_screen/service/model/event_model.dart';
 
@@ -12,98 +14,127 @@ class EventDetailsView extends GetView<EventDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    final event = controller.event;
-
     return Scaffold(
       backgroundColor: appColors.scaffoldGreyColor,
       appBar: TitleAppBar(title: "Event Details"),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            appSize.size16.w,
-            appSize.size8.h,
-            appSize.size16.w,
-            appSize.size24.h,
+        child: Obx(() {
+          return FutureBuilder(
+            future: controller.event.value == null
+                ? controller.getEvent()
+                : null,
+            builder: (context, snapshot) {
+              final event = controller.event.value;
+              if (event == null && controller.hasError.value == false) {
+                return const Center(child: LoadingScreen());
+              } else if (event != null) {
+                return _EventDetailsBody(event: event);
+              }
+              return const NoDataPage(message: 'Event not found');
+            },
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _EventDetailsBody extends GetView<EventDetailsController> {
+  const _EventDetailsBody({required this.event});
+
+  final EventModel event;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        appSize.size16.w,
+        appSize.size8.h,
+        appSize.size16.w,
+        appSize.size24.h,
+      ),
+      child: Column(
+        children: [
+          _HeaderCard(
+            event: event,
+            dateHeadline: controller.dateHeadline(event),
           ),
-          child: Column(
-            children: [
-              _HeaderCard(event: event, dateHeadline: controller.dateHeadline),
-              SizedBox(height: appSize.size12.h),
-              _SectionCard(
-                icon: Icons.description_outlined,
-                title: 'Event Information',
-                child: Column(
-                  children: [
-                    _InfoRow(
-                      icon: Icons.access_time_rounded,
-                      label: 'TIME',
-                      value: event.time,
-                    ),
-                    SizedBox(height: appSize.size14.h),
-                    _InfoRow(
-                      icon: Icons.location_on_outlined,
-                      label: 'VENUE',
-                      value: event.venue,
-                    ),
-                    if (event.meetingLink != null) ...[
-                      SizedBox(height: appSize.size14.h),
-                      _InfoRow(
-                        icon: Icons.videocam_outlined,
-                        label: 'MEETING LINK',
-                        value: 'Join Meeting',
-                        valueColor: appColors.brandColor,
-                        underline: true,
-                        onValueTap: controller.onJoinMeeting,
-                      ),
-                    ],
-                    if (event.organizer != null) ...[
-                      SizedBox(height: appSize.size14.h),
-                      _InfoRow(
-                        icon: Icons.person_outline_rounded,
-                        label: 'ORGANIZER',
-                        value: event.organizer!,
-                      ),
-                    ],
-                  ],
+          SizedBox(height: appSize.size12.h),
+          _SectionCard(
+            icon: Icons.description_outlined,
+            title: 'Event Information',
+            child: Column(
+              children: [
+                _InfoRow(
+                  icon: Icons.access_time_rounded,
+                  label: 'TIME',
+                  value: event.time,
+                ),
+                if (event.venue.isNotEmpty) ...[
+                  SizedBox(height: appSize.size14.h),
+                  _InfoRow(
+                    icon: Icons.apartment_outlined,
+                    label: 'ORGANISATION',
+                    value: event.venue,
+                  ),
+                ],
+                if (event.meetingLink != null) ...[
+                  SizedBox(height: appSize.size14.h),
+                  _InfoRow(
+                    icon: Icons.videocam_outlined,
+                    label: 'MEETING LINK',
+                    value: 'Join Meeting',
+                    valueColor: appColors.brandColor,
+                    underline: true,
+                    onValueTap: controller.onJoinMeeting,
+                  ),
+                ],
+                if (event.organizer != null) ...[
+                  SizedBox(height: appSize.size14.h),
+                  _InfoRow(
+                    icon: Icons.person_outline_rounded,
+                    label: 'ORGANIZER',
+                    value: event.organizer!,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (event.instructions != null)
+            _SectionCard(
+              icon: Icons.info_outline_rounded,
+              iconBg: appColors.profileIconOrangeBg,
+              iconColor: appColors.profileIconOrange,
+              title: 'Instructions',
+              child: Text(
+                event.instructions!,
+                style: fontStyles.font12LightGrey500.copyWith(
+                  letterSpacing: 0,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
                 ),
               ),
-              if (event.instructions != null)
-                _SectionCard(
-                  icon: Icons.info_outline_rounded,
-                  iconBg: appColors.profileIconOrangeBg,
-                  iconColor: appColors.profileIconOrange,
-                  title: 'Instructions',
-                  child: Text(
-                    event.instructions!,
-                    style: fontStyles.font12LightGrey500.copyWith(
-                      letterSpacing: 0,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                    ),
+            ),
+          if (event.meetingLink != null)
+            _SectionCard(
+              icon: Icons.link_rounded,
+              title: 'Meeting Link',
+              showDivider: false,
+              child: CustomButton(
+                buttonName: 'Join Meeting',
+                buttonWidth: double.infinity,
+                onPressed: controller.onJoinMeeting,
+                prefixWidget: Padding(
+                  padding: EdgeInsets.only(right: appSize.size8.w),
+                  child: Icon(
+                    Icons.videocam_outlined,
+                    color: appColors.whiteColor,
+                    size: 18.sp,
                   ),
                 ),
-              if (event.meetingLink != null)
-                _SectionCard(
-                  icon: Icons.link_rounded,
-                  title: 'Meeting Link',
-                  showDivider: false,
-                  child: CustomButton(
-                    buttonName: 'Join Meeting',
-                    buttonWidth: double.infinity,
-                    onPressed: controller.onJoinMeeting,
-                    prefixWidget: Padding(
-                      padding: EdgeInsets.only(right: appSize.size8.w),
-                      child: Icon(
-                        Icons.videocam_outlined,
-                        color: appColors.whiteColor,
-                        size: 18.sp,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -122,7 +153,9 @@ class _HeaderCard extends StatelessWidget {
       padding: EdgeInsets.all(appSize.size16.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [appColors.brandColor, appColors.travelBlue],
+          colors: event.typeLabel.toLowerCase().contains("leave")
+              ? [appColors.profileIconOrange, appColors.orangeBgColor]
+              : [appColors.brandColor, appColors.travelBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -133,14 +166,10 @@ class _HeaderCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                event.type.icon,
-                color: appColors.whiteColor,
-                size: 16.sp,
-              ),
+              Icon(event.type.icon, color: appColors.whiteColor, size: 16.sp),
               SizedBox(width: appSize.size8.w),
               Text(
-                event.type.label,
+                event.typeLabel,
                 style: fontStyles.font12White500.copyWith(
                   fontWeight: FontWeight.w600,
                 ),

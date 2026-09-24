@@ -16,8 +16,14 @@ import '../../view/employee_screens/assets/create_asset_request_screen/view/crea
 import '../../view/employee_screens/contact_information/controller/controller.dart';
 import '../../view/employee_screens/contact_information/view/contact_information_view.dart';
 import '../../view/employee_screens/dashboard/view/employee_dashboard_view.dart';
-import '../../view/employee_screens/document_information/controller/controller.dart';
-import '../../view/employee_screens/document_information/view/document_information_view.dart';
+import '../../view/employee_screens/documents/document_types/controller/controller.dart';
+import '../../view/employee_screens/documents/document_types/view/document_types_view.dart';
+import '../../view/employee_screens/documents/letter_requests/controller/controller.dart';
+import '../../view/employee_screens/documents/letter_requests/create_letter_request/controller/controller.dart';
+import '../../view/employee_screens/documents/letter_requests/create_letter_request/view/create_letter_request_view.dart';
+import '../../view/employee_screens/documents/letter_requests/letter_request_details/controller/controller.dart';
+import '../../view/employee_screens/documents/letter_requests/letter_request_details/view/letter_request_details_view.dart';
+import '../../view/employee_screens/documents/letter_requests/view/letter_requests_view.dart';
 import '../../view/employee_screens/education_experience/controller/controller.dart';
 import '../../view/employee_screens/education_experience/view/education_experience_view.dart';
 import '../../view/employee_screens/emergency_contact/controller/controller.dart';
@@ -28,10 +34,8 @@ import '../../view/employee_screens/organization_chart_screen/controller/control
 import '../../view/employee_screens/organization_chart_screen/view/organization_chart_view.dart';
 import '../../view/employee_screens/employee_directory/controller/controller.dart';
 import '../../view/employee_screens/employee_directory/view/employee_directory_view.dart';
-import '../../view/employee_screens/employee_documents/controller/controller.dart';
-import '../../view/employee_screens/employee_documents/view/employee_documents_view.dart';
-import '../../view/employee_screens/employee_personal_documents/controller/controller.dart';
-import '../../view/employee_screens/employee_personal_documents/view/employee_personal_documents_view.dart';
+import '../../view/employee_screens/documents/create_document_screen/controller/controller.dart';
+import '../../view/employee_screens/documents/create_document_screen/view/create_document_view.dart';
 import '../../view/employee_screens/employment_information/controller/controller.dart';
 import '../../view/employee_screens/employment_information/view/employment_information_view.dart';
 import '../../view/employee_screens/events/event_details_screen/controller/controller.dart';
@@ -44,8 +48,6 @@ import '../../view/employee_screens/help_desk/raise_ticket_screen/controller/con
 import '../../view/employee_screens/help_desk/raise_ticket_screen/view/raise_ticket_view.dart';
 import '../../view/employee_screens/help_desk/ticket_details_screen/controller/controller.dart';
 import '../../view/employee_screens/help_desk/ticket_details_screen/view/ticket_details_view.dart';
-import '../../view/employee_screens/hr_documents/controller/controller.dart';
-import '../../view/employee_screens/hr_documents/view/hr_documents_view.dart';
 import '../../view/employee_screens/ideas/create_idea_screen/controller/controller.dart';
 import '../../view/employee_screens/ideas/create_idea_screen/view/create_idea_screen.dart';
 import '../../view/employee_screens/ideas/ideas_listing_screen/controller/controller.dart';
@@ -64,8 +66,6 @@ import '../../view/employee_screens/visits/visit_details_screen/controller/contr
 import '../../view/employee_screens/visits/visit_details_screen/view/visit_details_view.dart';
 import '../../view/employee_screens/visits/visits_listing_screen/controller/controller.dart';
 import '../../view/employee_screens/visits/visits_listing_screen/view/visits_view.dart';
-import '../../view/employee_screens/letter_requests/controller/controller.dart';
-import '../../view/employee_screens/letter_requests/view/letter_requests_view.dart';
 import '../../view/employee_screens/news/news_details_screen/controller/controller.dart';
 import '../../view/employee_screens/news/news_details_screen/view/news_details_view.dart';
 import '../../view/employee_screens/news/news_listing_screen/controller/controller.dart';
@@ -82,11 +82,12 @@ class AppRoutes {
   String contactInformation = "/contactInformation";
   String emergencyContact = "/emergencyContact";
   String educationExperience = "/educationExperience";
-  String documentInformation = "/documentInformation";
-  String employeePersonalDocuments = "/employeePersonalDocuments";
-  String employeeDocuments = "/employeeDocuments";
-  String hrDocuments = "/hrDocuments";
+  // String documentInformation = "/documentInformation";
+  String documentTypes = "/documentTypes";
+  String createDocument = "/createDocument";
   String letterRequests = "/letterRequests";
+  String createLetterRequest = "/createLetterRequest";
+  String letterRequestDetails = "/letterRequestDetails";
   String ideas = "/ideas";
   String createIdeaScreen = "/createIdeaScreen";
   String leave = "/leave";
@@ -153,30 +154,35 @@ List<GetPage<dynamic>> routes = [
     page: () => const EducationExperienceView(),
     binding: EducationExperienceController(),
   ),
+  // GetPage(
+  //   name: appRoutes.documentInformation,
+  //   page: () => const DocumentInformationView(),
+  //   binding: DocumentInformationController(),
+  // ),
   GetPage(
-    name: appRoutes.documentInformation,
-    page: () => const DocumentInformationView(),
-    binding: DocumentInformationController(),
+    name: appRoutes.documentTypes,
+    page: () => const DocumentTypesView(),
+    binding: DocumentTypesController(),
   ),
   GetPage(
-    name: appRoutes.employeePersonalDocuments,
-    page: () => const EmployeePersonalDocumentsView(),
-    binding: EmployeePersonalDocumentsController(),
-  ),
-  GetPage(
-    name: appRoutes.employeeDocuments,
-    page: () => const EmployeeDocumentsView(),
-    binding: EmployeeDocumentsController(),
-  ),
-  GetPage(
-    name: appRoutes.hrDocuments,
-    page: () => const HrDocumentsView(),
-    binding: HrDocumentsController(),
+    name: appRoutes.createDocument,
+    page: () => const CreateDocumentView(),
+    binding: CreateDocumentController(),
   ),
   GetPage(
     name: appRoutes.letterRequests,
     page: () => const LetterRequestsView(),
     binding: LetterRequestsController(),
+  ),
+  GetPage(
+    name: appRoutes.createLetterRequest,
+    page: () => const CreateLetterRequestView(),
+    binding: CreateLetterRequestController(),
+  ),
+  GetPage(
+    name: appRoutes.letterRequestDetails,
+    page: () => const LetterRequestDetailsView(),
+    binding: LetterRequestDetailsController(),
   ),
   GetPage(
     name: appRoutes.ideas,

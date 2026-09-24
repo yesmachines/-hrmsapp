@@ -83,8 +83,8 @@ class ProfileScreenView extends GetView<ProfileController> {
             CustomButton(
               buttonName: "Logout",
               prefixWidget: Padding(
-                padding: EdgeInsets.only(),
-                child: Icon(Icons.logout),
+                padding: EdgeInsets.only(right: appSize.size6.w),
+                child: Icon(Icons.logout,color: appColors.whiteColor,),
               ),
               buttonWidth: double.infinity,
               onPressed: controller.onLogout,

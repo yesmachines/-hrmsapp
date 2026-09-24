@@ -1,94 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PersonalInfoField {
-  const PersonalInfoField({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.isChip = false,
-  });
+import '../../../../main.dart';
+import '../../profile/service/model/profile_model.dart';
+import '../../profile/service/service.dart';
+import '../service/modal/personal_info_field.dart';
 
-  final String label;
-  final String value;
-  final IconData icon;
-  final bool isChip;
-}
 
 class PersonalInformationController extends GetxController with Bindings {
-  final RxBool isEditing = false.obs;
-  final RxString name = 'Safwan V'.obs;
-  final RxString jobTitle = 'Senior Flutter Developer'.obs;
-  final RxString avatarUrl = ''.obs;
+  Rxn<ProfileModel> profileData = Rxn(null);
+  RxBool hasError = RxBool(false);
 
-  final RxList<PersonalInfoField> fields = <PersonalInfoField>[
-    const PersonalInfoField(
-      label: 'OFFICIAL EMAIL',
-      value: 'safwanv@company.com',
-      icon: Icons.mail_outline_rounded,
-    ),
-    const PersonalInfoField(
-      label: 'EMPLOYEE ID CARD NUMBER',
-      value: 'IDC -2024-0701',
-      icon: Icons.badge_outlined,
-    ),
-    const PersonalInfoField(
-      label: 'AUTO GENERATED EMPLOYEE ID',
-      value: 'EMP43278',
-      icon: Icons.fingerprint_rounded,
-    ),
-    const PersonalInfoField(
-      label: 'JOIN DATE',
-      value: '01 July 2001',
-      icon: Icons.calendar_today_outlined,
-    ),
-    const PersonalInfoField(
-      label: 'SALUTATION',
-      value: 'Mr.',
-      icon: Icons.person_outline_rounded,
-    ),
-    const PersonalInfoField(
-      label: 'FULL NAME',
-      value: 'Safwan V',
-      icon: Icons.credit_card_outlined,
-    ),
-    const PersonalInfoField(
-      label: 'GENDER',
-      value: 'Male',
-      icon: Icons.wc_outlined,
-      isChip: true,
-    ),
-    const PersonalInfoField(
-      label: 'DATE OF BIRTH PASSPORT',
-      value: 'Aug 06, 2001',
-      icon: Icons.cake_outlined,
-    ),
-    const PersonalInfoField(
-      label: 'PERSONAL DATE OF BIRTH',
-      value: 'Aug 06, 2001',
-      icon: Icons.contact_page_outlined,
-    ),
-    const PersonalInfoField(
-      label: 'MARITAL STATUS',
-      value: 'Single',
-      icon: Icons.favorite_border_rounded,
-    ),
-    const PersonalInfoField(
-      label: 'NATIONALITY',
-      value: 'United Kingdom',
-      icon: Icons.public_outlined,
-    ),
-  ].obs;
+  final RxList<PersonalInfoField> fields = <PersonalInfoField>[].obs;
 
-  void toggleEdit() {
-    isEditing.value = !isEditing.value;
+  Future<ProfileModel> getProfile() async {
+    hasError.value = false;
+    return ProfileService.getProfile()
+        .then((value) {
+      profileData.value = value;
+      fields.value = [
+        PersonalInfoField(
+          label: 'OFFICIAL EMAIL',
+          value: value.email.isNotEmpty ? value.email : '-',
+          icon: Icons.mail_outline_rounded,
+        ),
+        PersonalInfoField(
+          label: 'EMPLOYEE ID CARD NUMBER',
+          value: value.employeeCode.isNotEmpty? value.employeeCode : '-',
+          icon: Icons.badge_outlined,
+        ),
+        PersonalInfoField(
+          label: 'AUTO GENERATED EMPLOYEE ID',
+          value: value.departmentId.isNotEmpty ? value.departmentId : '-',
+          icon: Icons.fingerprint_rounded,
+        ),
+        PersonalInfoField(
+          label: 'JOIN DATE',
+          value: value.joiningDate.isNotEmpty ? value.joiningDate : '-',
+          icon: Icons.calendar_today_outlined,
+        ),
+        PersonalInfoField(
+          label: 'SALUTATION',
+          value: value.division.isNotEmpty ? value.division : '-',
+          icon: Icons.person_outline_rounded,
+        ),
+        PersonalInfoField(
+          label: 'FULL NAME',
+          value: value.name.isNotEmpty ? value.name : '-',
+          icon: Icons.credit_card_outlined,
+        ),
+        PersonalInfoField(
+          label: 'GENDER',
+          value: value.name.isNotEmpty ? value.name : '-',
+          icon: Icons.wc_outlined,
+          isChip: true,
+        ),
+        PersonalInfoField(
+          label: 'DATE OF BIRTH PASSPORT',
+          value: value.joiningDate.isNotEmpty ? value.joiningDate : '-',
+          icon: Icons.cake_outlined,
+        ),
+        PersonalInfoField(
+          label: 'PERSONAL DATE OF BIRTH',
+          value: value.joiningDate.isNotEmpty ? value.joiningDate : '-',
+          icon: Icons.contact_page_outlined,
+        ),
+        PersonalInfoField(
+          label: 'MARITAL STATUS',
+          value: value.status.isNotEmpty ? value.status : '-',
+          icon: Icons.favorite_border_rounded,
+        ),
+        PersonalInfoField(
+          label: 'NATIONALITY',
+          value: value.designation.isNotEmpty ? value.designation : '-',
+          icon: Icons.public_outlined,
+        ),
+      ];
+      return value;
+    })
+        .onError((error, stackTrace) {
+      hasError.value = true;
+      notificationHandler.apiErrorNotificationHandler(error: error);
+      throw Exception();
+    });
   }
 
-  void onChangePhoto() {}
-
-  void saveChanges() {
-    isEditing.value = false;
-  }
 
   @override
   void dependencies() {

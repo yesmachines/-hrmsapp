@@ -19,6 +19,11 @@ class ApiRoutes {
   String assetMyAssigned = "$_baseUrl/assets/my-assigned";
   String profile = "$_baseUrl/me";
   String documents = "$_baseUrl/documents/categories";
+  String createDocument = "$_baseUrl/documents";
+  String documentsFiles = "$_baseUrl/documents";
   String documentsType = "$_baseUrl/documents/types";
+  String letterRequests = "$_baseUrl/documents/letters";
   String hrDocuments = "$_baseUrl/documents/policies";
+  String events = "$_baseUrl/events";
+  String todayEvents = "$_baseUrl/events/today";
 }

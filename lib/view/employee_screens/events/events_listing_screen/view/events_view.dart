@@ -6,6 +6,7 @@ import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/view/employee_screens/events/events_listing_screen/controller/controller.dart';
 import 'package:yes_hrm/view/employee_screens/events/events_listing_screen/view/widgets/event_card.dart';
+import 'package:yes_hrm/view/employee_screens/events/events_listing_screen/view/widgets/event_loading_screen.dart';
 
 class EventsView extends GetView<EventsController> {
   const EventsView({super.key});
@@ -60,20 +61,36 @@ class EventsView extends GetView<EventsController> {
               ),
             ),
             Expanded(
-              child: controller.events.isEmpty
-                  ? const NoDataPage()
-                  : ListView.builder(
-                      padding: EdgeInsets.fromLTRB(
-                        appSize.size16.w,
-                        0,
-                        appSize.size16.w,
-                        appSize.size24.h,
-                      ),
-                      itemCount: controller.events.length,
-                      itemBuilder: (context, index) {
-                        return EventCard(event: controller.events[index]);
-                      },
-                    ),
+              child: Obx(
+                () => FutureBuilder(
+                  future: controller.events.value == null
+                      ? controller.getTodayEvents()
+                      : null,
+                  builder: (context, snapshot) {
+                    if (controller.events.value == null &&
+                        controller.hasError.value == false) {
+                      return const EventLoadingWidget();
+                    } else if (controller.events.value != null &&
+                        controller.events.value!.isNotEmpty) {
+                      final events = controller.events.value!;
+                      return ListView.builder(
+                        padding: EdgeInsets.fromLTRB(
+                          appSize.size16.w,
+                          0,
+                          appSize.size16.w,
+                          appSize.size24.h,
+                        ),
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          return EventCard(event: events[index]);
+                        },
+                      );
+                    } else {
+                      return const NoDataPage(message: 'No events for today');
+                    }
+                  },
+                ),
+              ),
             ),
           ],
         ),

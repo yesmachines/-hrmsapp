@@ -50,6 +50,10 @@ class LoginController extends GetxController with Bindings {
               key: SharedDataKey.token,
               value: value.token,
             );
+            sharedDataHandler.setSharedData(
+              key: SharedDataKey.userId,
+              value: value.userId,
+            );
             Get.back();
             Get.offAllNamed(appRoutes.employeeDashboardView);
             notificationHandler.sendNotification(

@@ -51,6 +51,7 @@ class AppColors {
   Color profileIconPink = Color(0xFFE11D48);
   Color profileIconOrangeBg = Color(0xFFFFF7ED);
   Color profileIconOrange = Color(0xFFF59E0B);
+  Color orangeBgColor = Color(0xFFFFB52E);
   Color profileIconTealBg = Color(0xFFCCFBF1);
   Color profileIconTeal = Color(0xFF0D9488);
   Color profileNameColor = Color(0xFF1E293B);

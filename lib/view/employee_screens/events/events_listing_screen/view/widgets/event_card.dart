@@ -51,8 +51,8 @@ class EventCard extends GetView<EventsController> {
                   ),
                   SizedBox(width: appSize.size8.w),
                   Expanded(
-                    child: Text(
-                      event.type.badgeLabel,
+                    child:                       Text(
+                      event.typeBadgeLabel,
                       style: fontStyles.font12Brand600.copyWith(
                         letterSpacing: 0.6,
                         fontWeight: FontWeight.w700,
@@ -77,12 +77,13 @@ class EventCard extends GetView<EventsController> {
                       text: event.time,
                     ),
                   ),
-                  Expanded(
-                    child: _Meta(
-                      icon: Icons.location_on_outlined,
-                      text: event.venue,
+                  if (event.venue.isNotEmpty)
+                    Expanded(
+                      child: _Meta(
+                        icon: Icons.apartment_outlined,
+                        text: event.venue,
+                      ),
                     ),
-                  ),
                 ],
               ),
               if (event.organizer != null) ...[
