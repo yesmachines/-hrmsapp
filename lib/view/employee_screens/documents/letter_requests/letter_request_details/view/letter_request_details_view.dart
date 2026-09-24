@@ -6,7 +6,8 @@ import 'package:yes_hrm/utils/app_bar/title_app_bar/title_app_bar.dart';
 import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/view/employee_screens/documents/letter_requests/letter_request_details/controller/controller.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/model/letter_request_model.dart';
+
+import '../../letter_request_listing/service/model/letter_request_model.dart';
 
 class LetterRequestDetailsView extends GetView<LetterRequestDetailsController> {
   const LetterRequestDetailsView({super.key});

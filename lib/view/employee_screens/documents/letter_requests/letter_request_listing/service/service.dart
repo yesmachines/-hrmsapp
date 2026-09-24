@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/middleware/api_call_handler/api_call_handler.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/model/letter_request_model.dart';
+
+import 'model/letter_request_model.dart';
 
 class LetterRequestService {
   static Future<List<LetterRequestModel>> getLetterRequests() async {

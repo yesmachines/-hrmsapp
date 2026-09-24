@@ -1,8 +1,9 @@
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/attachment_viewer/attachment_viewer.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/model/letter_request_model.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/service.dart';
+
+import '../../letter_request_listing/service/model/letter_request_model.dart';
+import '../../letter_request_listing/service/service.dart';
 
 class LetterRequestDetailsController extends GetxController with Bindings {
   final Rxn<LetterRequestModel> request = Rxn(null);

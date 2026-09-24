@@ -6,7 +6,8 @@ import 'package:yes_hrm/utils/custom_bottom_sheet/custom_bottom_sheet.dart';
 import 'package:yes_hrm/utils/loading_screen/loading_screen.dart';
 import 'package:yes_hrm/view/employee_screens/documents/document_types/service/model/document_type_model.dart';
 import 'package:yes_hrm/view/employee_screens/documents/document_types/service/service.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/service.dart';
+
+import '../../letter_request_listing/service/service.dart';
 
 class CreateLetterRequestController extends GetxController with Bindings {
   final TextEditingController purposeController = TextEditingController();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../../main.dart';
-import '../../../../../../utils/shimmers/custom_shimmer.dart';
+import '../../../../../../../main.dart';
+import '../../../../../../../utils/shimmers/custom_shimmer.dart';
 
 class LetterRequestLoadingWidget extends StatelessWidget {
   const LetterRequestLoadingWidget({super.key});

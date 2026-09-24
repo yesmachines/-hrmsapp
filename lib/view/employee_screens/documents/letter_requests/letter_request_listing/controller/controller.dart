@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/model/letter_request_model.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/service.dart';
+
+import '../service/model/letter_request_model.dart';
+import '../service/service.dart';
 
 class LetterRequestsController extends GetxController with Bindings {
   final TextEditingController searchController = TextEditingController();

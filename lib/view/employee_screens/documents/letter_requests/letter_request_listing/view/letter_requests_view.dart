@@ -5,9 +5,10 @@ import 'package:yes_hrm/main.dart';
 import 'package:yes_hrm/utils/image_handler/image_handler.dart';
 import 'package:yes_hrm/utils/no_data_page/no_data_page.dart';
 import 'package:yes_hrm/utils/textfield/custom_textfield.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/controller/controller.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/view/widgets/letter_request_card.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/view/widgets/letter_request_loading_screen.dart';
+import 'package:yes_hrm/view/employee_screens/documents/letter_requests/letter_request_listing/view/widgets/letter_request_card.dart';
+
+import '../controller/controller.dart';
+import 'widgets/letter_request_loading_screen.dart';
 
 class LetterRequestsView extends GetView<LetterRequestsController> {
   const LetterRequestsView({super.key});

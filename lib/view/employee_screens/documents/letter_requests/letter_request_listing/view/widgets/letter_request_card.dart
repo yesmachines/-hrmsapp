@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:yes_hrm/main.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/controller/controller.dart';
-import 'package:yes_hrm/view/employee_screens/documents/letter_requests/service/model/letter_request_model.dart';
+
+import '../../controller/controller.dart';
+import '../../service/model/letter_request_model.dart';
 
 class LetterRequestCard extends GetView<LetterRequestsController> {
   const LetterRequestCard({super.key, required this.request});
