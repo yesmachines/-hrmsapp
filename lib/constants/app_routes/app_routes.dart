@@ -15,6 +15,8 @@ import '../../view/employee_screens/assets/create_asset_request_screen/controlle
 import '../../view/employee_screens/assets/create_asset_request_screen/view/create_asset_request_view.dart';
 import '../../view/employee_screens/contact_information/controller/controller.dart';
 import '../../view/employee_screens/contact_information/view/contact_information_view.dart';
+import '../../view/employee_screens/create_post_screen/controller/controller.dart';
+import '../../view/employee_screens/create_post_screen/view/create_post_screen.dart';
 import '../../view/employee_screens/dashboard/view/employee_dashboard_view.dart';
 import '../../view/employee_screens/documents/document_types/controller/controller.dart';
 import '../../view/employee_screens/documents/document_types/view/document_types_view.dart';
@@ -60,6 +62,8 @@ import '../../view/employee_screens/leave/leave_history_screen/controller/contro
 import '../../view/employee_screens/leave/leave_history_screen/view/leave_history_view.dart';
 import '../../view/employee_screens/leave/leave_screen/controller/controller.dart';
 import '../../view/employee_screens/leave/leave_screen/view/leave_view.dart';
+import '../../view/employee_screens/social_screen/controller/controller.dart';
+import '../../view/employee_screens/social_screen/view/social_screen.dart';
 import '../../view/employee_screens/visits/request_visit_screen/controller/controller.dart';
 import '../../view/employee_screens/visits/request_visit_screen/view/request_visit_view.dart';
 import '../../view/employee_screens/visits/visit_details_screen/controller/controller.dart';
@@ -112,6 +116,8 @@ class AppRoutes {
   String raiseTicket = "/raiseTicket";
   String events = "/events";
   String eventDetails = "/eventDetails";
+  String socialScreen = "/socialScreen";
+  String createPost = "/createPost";
 }
 
 List<GetPage<dynamic>> routes = [
@@ -299,5 +305,15 @@ List<GetPage<dynamic>> routes = [
     name: appRoutes.eventDetails,
     page: () => const EventDetailsView(),
     binding: EventDetailsController(),
+  ),
+  GetPage(
+    name: appRoutes.socialScreen,
+    page: () => const SocialsScreen(),
+    binding: SocialsController(),
+  ),
+  GetPage(
+    name: appRoutes.createPost,
+    page: () => const CreatePostScreen(),
+    binding: CreatePostController(),
   ),
 ];

@@ -69,4 +69,7 @@ class AppColors {
   Color submittedBadgeText = Color(0xFF1D4ED8);
   Color acceptedBadgeBg = Color(0xFFFFF7ED);
   Color acceptedBadgeText = Color(0xFFEA580C);
+  Color profileText = Color(0xFF182230);
+  Color subText = Color(0xFF667085);
+  Color dividerColor = Color(0xFFEAECF0);
 }
